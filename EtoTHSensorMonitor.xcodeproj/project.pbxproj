@@ -1,0 +1,563 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		ABC703C42E6853FD006E6F97 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ABC703AE2E6853FC006E6F97 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ABC703B52E6853FC006E6F97;
+			remoteInfo = EtoTHSensorMonitor;
+		};
+		ABC703CE2E6853FD006E6F97 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ABC703AE2E6853FC006E6F97 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ABC703B52E6853FC006E6F97;
+			remoteInfo = EtoTHSensorMonitor;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		ABC703B62E6853FC006E6F97 /* EtoTHSensorMonitor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EtoTHSensorMonitor.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ABC703C32E6853FD006E6F97 /* EtoTHSensorMonitorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EtoTHSensorMonitorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		ABC703CD2E6853FD006E6F97 /* EtoTHSensorMonitorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EtoTHSensorMonitorUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		ABC703B82E6853FC006E6F97 /* EtoTHSensorMonitor */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = EtoTHSensorMonitor;
+			sourceTree = "<group>";
+		};
+		ABC703C62E6853FD006E6F97 /* EtoTHSensorMonitorTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = EtoTHSensorMonitorTests;
+			sourceTree = "<group>";
+		};
+		ABC703D02E6853FD006E6F97 /* EtoTHSensorMonitorUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = EtoTHSensorMonitorUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		ABC703B32E6853FC006E6F97 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ABC703C02E6853FD006E6F97 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ABC703CA2E6853FD006E6F97 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		ABC703AD2E6853FC006E6F97 = {
+			isa = PBXGroup;
+			children = (
+				ABC703B82E6853FC006E6F97 /* EtoTHSensorMonitor */,
+				ABC703C62E6853FD006E6F97 /* EtoTHSensorMonitorTests */,
+				ABC703D02E6853FD006E6F97 /* EtoTHSensorMonitorUITests */,
+				ABC703B72E6853FC006E6F97 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		ABC703B72E6853FC006E6F97 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				ABC703B62E6853FC006E6F97 /* EtoTHSensorMonitor.app */,
+				ABC703C32E6853FD006E6F97 /* EtoTHSensorMonitorTests.xctest */,
+				ABC703CD2E6853FD006E6F97 /* EtoTHSensorMonitorUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		ABC703B52E6853FC006E6F97 /* EtoTHSensorMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ABC703D72E6853FD006E6F97 /* Build configuration list for PBXNativeTarget "EtoTHSensorMonitor" */;
+			buildPhases = (
+				ABC703B22E6853FC006E6F97 /* Sources */,
+				ABC703B32E6853FC006E6F97 /* Frameworks */,
+				ABC703B42E6853FC006E6F97 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				ABC703B82E6853FC006E6F97 /* EtoTHSensorMonitor */,
+			);
+			name = EtoTHSensorMonitor;
+			packageProductDependencies = (
+			);
+			productName = EtoTHSensorMonitor;
+			productReference = ABC703B62E6853FC006E6F97 /* EtoTHSensorMonitor.app */;
+			productType = "com.apple.product-type.application";
+		};
+		ABC703C22E6853FD006E6F97 /* EtoTHSensorMonitorTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ABC703DA2E6853FD006E6F97 /* Build configuration list for PBXNativeTarget "EtoTHSensorMonitorTests" */;
+			buildPhases = (
+				ABC703BF2E6853FD006E6F97 /* Sources */,
+				ABC703C02E6853FD006E6F97 /* Frameworks */,
+				ABC703C12E6853FD006E6F97 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				ABC703C52E6853FD006E6F97 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				ABC703C62E6853FD006E6F97 /* EtoTHSensorMonitorTests */,
+			);
+			name = EtoTHSensorMonitorTests;
+			packageProductDependencies = (
+			);
+			productName = EtoTHSensorMonitorTests;
+			productReference = ABC703C32E6853FD006E6F97 /* EtoTHSensorMonitorTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		ABC703CC2E6853FD006E6F97 /* EtoTHSensorMonitorUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ABC703DD2E6853FD006E6F97 /* Build configuration list for PBXNativeTarget "EtoTHSensorMonitorUITests" */;
+			buildPhases = (
+				ABC703C92E6853FD006E6F97 /* Sources */,
+				ABC703CA2E6853FD006E6F97 /* Frameworks */,
+				ABC703CB2E6853FD006E6F97 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				ABC703CF2E6853FD006E6F97 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				ABC703D02E6853FD006E6F97 /* EtoTHSensorMonitorUITests */,
+			);
+			name = EtoTHSensorMonitorUITests;
+			packageProductDependencies = (
+			);
+			productName = EtoTHSensorMonitorUITests;
+			productReference = ABC703CD2E6853FD006E6F97 /* EtoTHSensorMonitorUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		ABC703AE2E6853FC006E6F97 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1640;
+				LastUpgradeCheck = 1640;
+				TargetAttributes = {
+					ABC703B52E6853FC006E6F97 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					ABC703C22E6853FD006E6F97 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = ABC703B52E6853FC006E6F97;
+					};
+					ABC703CC2E6853FD006E6F97 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = ABC703B52E6853FC006E6F97;
+					};
+				};
+			};
+			buildConfigurationList = ABC703B12E6853FC006E6F97 /* Build configuration list for PBXProject "EtoTHSensorMonitor" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = ABC703AD2E6853FC006E6F97;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = ABC703B72E6853FC006E6F97 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				ABC703B52E6853FC006E6F97 /* EtoTHSensorMonitor */,
+				ABC703C22E6853FD006E6F97 /* EtoTHSensorMonitorTests */,
+				ABC703CC2E6853FD006E6F97 /* EtoTHSensorMonitorUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		ABC703B42E6853FC006E6F97 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ABC703C12E6853FD006E6F97 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ABC703CB2E6853FD006E6F97 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		ABC703B22E6853FC006E6F97 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ABC703BF2E6853FD006E6F97 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ABC703C92E6853FD006E6F97 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		ABC703C52E6853FD006E6F97 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ABC703B52E6853FC006E6F97 /* EtoTHSensorMonitor */;
+			targetProxy = ABC703C42E6853FD006E6F97 /* PBXContainerItemProxy */;
+		};
+		ABC703CF2E6853FD006E6F97 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ABC703B52E6853FC006E6F97 /* EtoTHSensorMonitor */;
+			targetProxy = ABC703CE2E6853FD006E6F97 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		ABC703D52E6853FD006E6F97 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = A953UC9CN9;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		ABC703D62E6853FD006E6F97 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = A953UC9CN9;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		ABC703D82E6853FD006E6F97 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = A953UC9CN9;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.etokoji.EtoTHSensorMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		ABC703D92E6853FD006E6F97 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = A953UC9CN9;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.etokoji.EtoTHSensorMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		ABC703DB2E6853FD006E6F97 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = A953UC9CN9;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.etokoji.EtoTHSensorMonitorTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/EtoTHSensorMonitor.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/EtoTHSensorMonitor";
+			};
+			name = Debug;
+		};
+		ABC703DC2E6853FD006E6F97 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = A953UC9CN9;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.etokoji.EtoTHSensorMonitorTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/EtoTHSensorMonitor.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/EtoTHSensorMonitor";
+			};
+			name = Release;
+		};
+		ABC703DE2E6853FD006E6F97 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = A953UC9CN9;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.etokoji.EtoTHSensorMonitorUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = EtoTHSensorMonitor;
+			};
+			name = Debug;
+		};
+		ABC703DF2E6853FD006E6F97 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = A953UC9CN9;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.etokoji.EtoTHSensorMonitorUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = EtoTHSensorMonitor;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		ABC703B12E6853FC006E6F97 /* Build configuration list for PBXProject "EtoTHSensorMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ABC703D52E6853FD006E6F97 /* Debug */,
+				ABC703D62E6853FD006E6F97 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ABC703D72E6853FD006E6F97 /* Build configuration list for PBXNativeTarget "EtoTHSensorMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ABC703D82E6853FD006E6F97 /* Debug */,
+				ABC703D92E6853FD006E6F97 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ABC703DA2E6853FD006E6F97 /* Build configuration list for PBXNativeTarget "EtoTHSensorMonitorTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ABC703DB2E6853FD006E6F97 /* Debug */,
+				ABC703DC2E6853FD006E6F97 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ABC703DD2E6853FD006E6F97 /* Build configuration list for PBXNativeTarget "EtoTHSensorMonitorUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ABC703DE2E6853FD006E6F97 /* Debug */,
+				ABC703DF2E6853FD006E6F97 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = ABC703AE2E6853FC006E6F97 /* Project object */;
+}
