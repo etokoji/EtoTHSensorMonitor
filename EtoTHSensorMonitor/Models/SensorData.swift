@@ -13,13 +13,12 @@ struct SensorData: Identifiable, Codable {
     let pressureHPa: Double
     let voltageVolts: Double
     let groupedCount: Int // グループ化された件数
-    let isFromBackground: Bool // バックグラウンドで受信されたデータかどうか
     
     // アニメーション用プロパティ（永続化しない）
     private enum CodingKeys: String, CodingKey {
         case id, timestamp, deviceAddress, deviceName, rssi
         case deviceId, readingId, temperatureCelsius, humidityPercent, pressureHPa, voltageVolts
-        case groupedCount, isFromBackground
+        case groupedCount
     }
     
     init(timestamp: Date = Date(),
@@ -32,8 +31,7 @@ struct SensorData: Identifiable, Codable {
          humidityPercent: Double,
          pressureHPa: Double,
          voltageVolts: Double,
-         groupedCount: Int = 1,
-         isFromBackground: Bool = false) {
+         groupedCount: Int = 1) {
         self.timestamp = timestamp
         self.deviceAddress = deviceAddress
         self.deviceName = deviceName
@@ -45,7 +43,6 @@ struct SensorData: Identifiable, Codable {
         self.pressureHPa = pressureHPa
         self.voltageVolts = voltageVolts
         self.groupedCount = groupedCount
-        self.isFromBackground = isFromBackground
     }
     
     var formattedTemperature: String {

@@ -415,13 +415,11 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = EtoTHSensorMonitor/Info.plist;
-				INFOPLIST_KEY_BGTaskSchedulerPermittedIdentifiers = com.etokoji.EtoTHSensorMonitor.sensorScan;
 				INFOPLIST_KEY_CFBundleDisplayName = "ESP32センサー";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "このアプリは、ESP32デバイスからのセンサーデータを受信するためにBluetoothを使用します。";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "ESP32センサーからの環境データ（温度、湿度、電圧）を受信するためにBluetoothアクセスが必要です。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UIBackgroundModes = "background-processing bluetooth-central";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -450,13 +448,11 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = EtoTHSensorMonitor/Info.plist;
-				INFOPLIST_KEY_BGTaskSchedulerPermittedIdentifiers = com.etokoji.EtoTHSensorMonitor.sensorScan;
 				INFOPLIST_KEY_CFBundleDisplayName = "ESP32センサー";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "このアプリは、ESP32デバイスからのセンサーデータを受信するためにBluetoothを使用します。";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "ESP32センサーからの環境データ（温度、湿度、電圧）を受信するためにBluetoothアクセスが必要です。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UIBackgroundModes = "background-processing bluetooth-central";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

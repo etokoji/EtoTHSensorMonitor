@@ -23,20 +23,6 @@ struct SensorReadingView: View {
                                 .foregroundColor(.secondary)
                         }
                         
-                        // バックグラウンドインジケーター
-                        if sensorData.isFromBackground {
-                            HStack(spacing: 2) {
-                                Image(systemName: "moon.fill")
-                                Text("バックグラウンド")
-                            }
-                            .font(.caption2)
-                            .foregroundColor(.purple)
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 1)
-                            .background(Color.purple.opacity(0.1))
-                            .cornerRadius(4)
-                        }
-                        
                         if sensorData.groupedCount > 1 {
                             Text("(\(sensorData.groupedCount)件)")
                                 .font(.caption2)

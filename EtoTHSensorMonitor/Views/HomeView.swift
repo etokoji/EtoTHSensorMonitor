@@ -10,11 +10,7 @@ struct HomeView: View {
             return latest
         }
         // 履歴が空の場合はdiscoveredDevicesから取得
-        if let discovered = viewModel.discoveredDevices.values.sorted(by: { $0.timestamp > $1.timestamp }).first {
-            return discovered
-        }
-        // 最後にバックグラウンド保存データを確認
-        return BackgroundTaskManager.shared.loadLatestSensorData()
+        return viewModel.discoveredDevices.values.sorted(by: { $0.timestamp > $1.timestamp }).first
     }
     
     var body: some View {
@@ -126,13 +122,6 @@ struct HomeView: View {
                 viewModel.startScanning()
             }
             
-            // バックグラウンドタスクの状態をチェック
-            BackgroundTaskDebugger.shared.logBackgroundTaskStatus()
-            BackgroundTaskDebugger.shared.checkBackgroundAppRefreshPermission()
-            BackgroundTaskDebugger.shared.checkLastBackgroundUpdate()
-            
-            // バックグラウンドデータを統合
-            viewModel.loadAndIntegrateBackgroundData()
         }
         .onReceive(viewModel.dataReceivedSubject) { _ in
             withAnimation(.easeInOut(duration: 0.3)) {

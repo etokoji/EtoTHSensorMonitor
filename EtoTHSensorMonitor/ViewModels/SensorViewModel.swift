@@ -89,8 +89,6 @@ class SensorViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] sensorData in
                 self?.addSensorReading(sensorData)
-                // バックグラウンド用に最新データを保存
-                self?.saveLatestDataForBackground(sensorData)
             }
             .store(in: &cancellables)
     }
@@ -117,8 +115,7 @@ class SensorViewModel: ObservableObject {
                 humidityPercent: firstReading.humidityPercent,
                 pressureHPa: firstReading.pressureHPa,
                 voltageVolts: firstReading.voltageVolts,
-                groupedCount: firstReading.groupedCount + 1,
-                isFromBackground: firstReading.isFromBackground // バックグラウンドフラグを継承
+                groupedCount: firstReading.groupedCount + 1
             )
             
             // ハイライト用（グループ化された場合も同じIDを使用）
@@ -211,20 +208,6 @@ class SensorViewModel: ObservableObject {
         }
     }
     
-    private func saveLatestDataForBackground(_ sensorData: SensorData) {
-        do {
-            let encoder = JSONEncoder()
-            let data = try encoder.encode(sensorData)
-            UserDefaults.standard.set(data, forKey: "latestSensorData")
-            UserDefaults.standard.set(Date(), forKey: "latestSensorDataTimestamp")
-            // Debug用のログは削除（スパム防止）
-            
-            // 電池残量チェックと通知
-            checkBatteryLevelAndNotify(sensorData)
-        } catch {
-            print("❌ Failed to save background data: \(error)")
-        }
-    }
     
     private func checkBatteryLevelAndNotify(_ sensorData: SensorData) {
         let settings = SettingsManager.shared
@@ -283,59 +266,6 @@ class SensorViewModel: ObservableObject {
             } else {
                 print("🔋 Battery notification scheduled: \(title)")
             }
-        }
-    }
-    
-    // MARK: - Background Data Integration
-    
-    func loadAndIntegrateBackgroundData() {
-        guard let backgroundData = BackgroundTaskManager.shared.loadLatestSensorData() else {
-            print("🌙 No background data available")
-            return
-        }
-        
-        // 既存データと比較して新しい場合のみ統合
-        let isNewer = sensorReadings.isEmpty || 
-                     sensorReadings.first?.timestamp ?? Date.distantPast < backgroundData.timestamp
-        
-        if isNewer {
-            // バックグラウンドフラグを付けて新しいSensorDataを作成
-            let backgroundSensorData = SensorData(
-                timestamp: backgroundData.timestamp,
-                deviceAddress: backgroundData.deviceAddress,
-                deviceName: backgroundData.deviceName,
-                rssi: backgroundData.rssi,
-                deviceId: backgroundData.deviceId,
-                readingId: backgroundData.readingId,
-                temperatureCelsius: backgroundData.temperatureCelsius,
-                humidityPercent: backgroundData.humidityPercent,
-                pressureHPa: backgroundData.pressureHPa,
-                voltageVolts: backgroundData.voltageVolts,
-                groupedCount: 1,
-                isFromBackground: true
-            )
-            
-            print("🌙 Integrating background data: \(backgroundData.formattedTimestamp)")
-            
-            // 先頭に追加してハイライト
-            sensorReadings.insert(backgroundSensorData, at: 0)
-            highlightedReadingIds.insert(backgroundSensorData.id)
-            
-            // 5秒後にハイライト解除（バックグラウンドデータは少し長めに）
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
-                self?.highlightedReadingIds.remove(backgroundSensorData.id)
-            }
-            
-            // リストサイズを制限
-            if sensorReadings.count > Constants.maxStoredReadings {
-                let removedReading = sensorReadings.removeLast()
-                highlightedReadingIds.remove(removedReading.id)
-            }
-            
-            // UI更新をトリガー
-            objectWillChange.send()
-        } else {
-            print("🌙 Background data is older than current data, skipping integration")
         }
     }
     
