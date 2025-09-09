@@ -2,11 +2,46 @@ import SwiftUI
 
 struct SettingsView: View {
     @StateObject private var settings = SettingsManager.shared
+    @ObservedObject var viewModel: SensorViewModel
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         NavigationView {
             Form {
+                Section(header: Text("接続設定")) {
+                    // TCP接続の有効/無効
+                    Toggle("TCPサーバ接続", isOn: $viewModel.tcpEnabled)
+                    
+                    // 接続状態表示
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("接続状態")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text(viewModel.detailedConnectionStatus)
+                            .font(.footnote)
+                            .foregroundColor(
+                                viewModel.activeConnectionType == "TCP" ? .green :
+                                viewModel.activeConnectionType == "Bluetooth" ? .blue : .secondary
+                            )
+                    }
+                    
+                    if viewModel.tcpEnabled {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("サーバ情報")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text("192.168.1.89:8080")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                            Text("接続状態: \(viewModel.tcpConnectionState)")
+                                .font(.footnote)
+                                .foregroundColor(
+                                    viewModel.isTCPConnected ? .green : .orange
+                                )
+                        }
+                    }
+                }
+                
                 Section(header: Text("電池設定")) {
                     // 電池タイプ選択
                     Picker("電池タイプ", selection: $settings.selectedBatteryType) {
@@ -124,5 +159,5 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView()
+    SettingsView(viewModel: SensorViewModel())
 }

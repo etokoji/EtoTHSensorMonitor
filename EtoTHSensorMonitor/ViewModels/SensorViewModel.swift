@@ -16,6 +16,12 @@ class SensorViewModel: ObservableObject {
     @Published var selectedDeviceId: UInt8?
     @Published var errorMessage: String?
     
+    // TCP関連のプロパティ
+    @Published var isTCPConnected = false
+    @Published var tcpConnectionState: String = "Disconnected"
+    @Published var activeConnectionType: String = "None"
+    @Published var tcpEnabled = false
+    
     // ハイライト管理用
     @Published var highlightedReadingIds: Set<UUID> = []
     
@@ -25,18 +31,18 @@ class SensorViewModel: ObservableObject {
     // 全データ受信通知用（重複含む）
     let dataReceivedSubject = PassthroughSubject<Void, Never>()
     
-    private let bluetoothService: BluetoothService
+    private let dataService: CompositeDataService
     private var cancellables = Set<AnyCancellable>()
     private var shouldStartScanningWhenReady = false
     
-    init(bluetoothService: BluetoothService = BluetoothService()) {
-        self.bluetoothService = bluetoothService
+    init(dataService: CompositeDataService = CompositeDataService()) {
+        self.dataService = dataService
         setupBindings()
     }
     
     private func setupBindings() {
         // Bind scanning state
-        bluetoothService.$isScanning
+        dataService.$isBluetoothScanning
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isScanning in
                 self?.isScanning = isScanning
@@ -44,7 +50,7 @@ class SensorViewModel: ObservableObject {
             .store(in: &cancellables)
         
         // Bind bluetooth state
-        bluetoothService.$bluetoothState
+        dataService.$bluetoothState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 let previousState = self?.bluetoothState
@@ -54,14 +60,57 @@ class SensorViewModel: ObservableObject {
                 if state == .poweredOn && previousState != .poweredOn && self?.shouldStartScanningWhenReady == true {
                     print("📡 Bluetooth is now available, starting scanning automatically")
                     self?.shouldStartScanningWhenReady = false
-                    self?.bluetoothService.startScanning()
+                    self?.dataService.startBluetoothScanning()
                     self?.errorMessage = nil
                 }
             }
             .store(in: &cancellables)
         
+        // Bind TCP state
+        dataService.$isTCPConnected
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isConnected in
+                self?.isTCPConnected = isConnected
+            }
+            .store(in: &cancellables)
+        
+        dataService.$tcpConnectionState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                self?.tcpConnectionState = state
+            }
+            .store(in: &cancellables)
+        
+        dataService.$activeConnectionType
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] type in
+                self?.activeConnectionType = type
+            }
+            .store(in: &cancellables)
+        
+        // TCP設定の一方向バインディング（CompositeDataService → SensorViewModel）
+        dataService.$tcpEnabled
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] enabled in
+                if self?.tcpEnabled != enabled {
+                    self?.tcpEnabled = enabled
+                }
+            }
+            .store(in: &cancellables)
+        
+        // SensorViewModelからCompositeDataServiceへの変更を反映（ループ防止）
+        $tcpEnabled
+            .dropFirst() // 初期値をスキップ
+            .removeDuplicates() // 重複する値をスキップ
+            .sink { [weak self] enabled in
+                if self?.dataService.tcpEnabled != enabled {
+                    self?.dataService.tcpEnabled = enabled
+                }
+            }
+            .store(in: &cancellables)
+        
         // Bind discovered devices
-        bluetoothService.$discoveredDevices
+        dataService.$discoveredDevices
             .receive(on: DispatchQueue.main)
             .sink { [weak self] devices in
                 self?.discoveredDevices = devices
@@ -69,7 +118,7 @@ class SensorViewModel: ObservableObject {
             .store(in: &cancellables)
         
         // Listen for new sensor data (value changes only)
-        bluetoothService.sensorDataPublisher
+        dataService.sensorDataPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] sensorData in
                 self?.sensorDataSubject.send(sensorData)
@@ -77,7 +126,7 @@ class SensorViewModel: ObservableObject {
             .store(in: &cancellables)
         
         // Listen for all data received (including duplicates) for history
-        bluetoothService.dataReceivedPublisher
+        dataService.dataReceivedPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.dataReceivedSubject.send()
@@ -85,7 +134,7 @@ class SensorViewModel: ObservableObject {
             .store(in: &cancellables)
         
         // Listen for all data (including duplicates) to add to reading history
-        bluetoothService.allDataPublisher
+        dataService.allDataPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] sensorData in
                 self?.addSensorReading(sensorData)
@@ -162,21 +211,30 @@ class SensorViewModel: ObservableObject {
         }
         
         print("📶 Starting Bluetooth scanning immediately")
-        bluetoothService.startScanning()
+        dataService.startBluetoothScanning()
         errorMessage = nil
         shouldStartScanningWhenReady = false
     }
     
     func stopScanning() {
-        bluetoothService.stopScanning()
+        dataService.stopBluetoothScanning()
     }
     
     func toggleScanning() {
-        if isScanning {
-            stopScanning()
-        } else {
-            startScanning()
-        }
+        dataService.toggleBluetoothScanning()
+    }
+    
+    // TCP関連メソッド
+    func startTCPConnection() {
+        dataService.startTCPConnection()
+    }
+    
+    func stopTCPConnection() {
+        dataService.stopTCPConnection()
+    }
+    
+    func toggleTCPConnection() {
+        dataService.toggleTCPConnection()
     }
     
     func clearReadings() {
@@ -293,23 +351,18 @@ class SensorViewModel: ObservableObject {
     }
     
     var hasReadings: Bool {
-        !discoveredDevices.isEmpty
+        return dataService.hasReadings
     }
     
     var bluetoothStateDescription: String {
-        switch bluetoothState {
-        case .poweredOn:
-            return "接続可能"
-        case .poweredOff:
-            return "オフ"
-        case .unauthorized:
-            return "未許可"
-        case .unsupported:
-            return "非サポート"
-        case .resetting:
-            return "リセット中"
-        default:
-            return "不明"
-        }
+        return dataService.bluetoothStateDescription
+    }
+    
+    var connectionStatusText: String {
+        return dataService.connectionStatusText
+    }
+    
+    var detailedConnectionStatus: String {
+        return dataService.detailedConnectionStatus
     }
 }

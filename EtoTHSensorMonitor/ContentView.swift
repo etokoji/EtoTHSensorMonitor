@@ -29,7 +29,7 @@ struct ContentView: View {
         }
         .accentColor(.blue)
         .sheet(isPresented: $showingSettings) {
-            SettingsView()
+            SettingsView(viewModel: sharedViewModel)
         }
         .onAppear {
             // アプリ起動時にグローバルにスキャンを開始
@@ -78,11 +78,7 @@ struct RealtimeScanView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    if viewModel.isScanning {
-                        Text("スキャン中")
-                            .font(.caption)
-                            .foregroundColor(.blue)
-                    }
+                    ConnectionStatusIndicator(viewModel: viewModel, isCompact: true)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -118,16 +114,13 @@ struct RealtimeScanView: View {
     
     private var statusHeader: some View {
         HStack {
-            HStack(spacing: 8) {
-                Image(systemName: bluetoothIconName)
-                    .foregroundColor(bluetoothIconColor)
+            // 通信状態インジケーター
+            ConnectionStatusIndicator(viewModel: viewModel, isCompact: true)
+            
+            if !viewModel.sensorReadings.isEmpty {
+                Text("履歴: \(viewModel.sensorReadings.count) 件")
                     .font(.caption)
-                
-                if !viewModel.sensorReadings.isEmpty {
-                    Text("履歴: \(viewModel.sensorReadings.count) 件")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                    .foregroundColor(.secondary)
             }
             
             Spacer()

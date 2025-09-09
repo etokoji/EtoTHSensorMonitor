@@ -25,11 +25,14 @@ struct HomeView: View {
             
             VStack(spacing: 40) {
                 // Header
-                VStack {
+                VStack(spacing: 10) {
                     Text("ESP32センサー")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
+                    
+                    // 通信状態インジケーター
+                    ConnectionStatusIndicator(viewModel: viewModel)
                     
                     if let data = latestSensorData {
                         Text("最終更新: \(formattedTimestamp(data.timestamp))")
@@ -140,6 +143,7 @@ struct HomeView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .none
         formatter.timeStyle = .medium
+        formatter.timeZone = TimeZone.current // 現在のタイムゾーンを使用
         return formatter.string(from: date)
     }
 }
