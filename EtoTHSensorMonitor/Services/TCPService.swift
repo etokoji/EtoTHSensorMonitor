@@ -12,6 +12,12 @@ class TCPService: NSObject, ObservableObject {
     private let port: UInt16 = 8080
     private let queue = DispatchQueue(label: "TCPService")
     
+    // 自動再接続のための変数
+    private var shouldAutoReconnect = true
+    private var reconnectAttempts = 0
+    private var maxReconnectAttempts = 5
+    private var baseReconnectDelay: TimeInterval = 2.0
+    
     let sensorDataPublisher = PassthroughSubject<SensorData, Never>()
     let dataReceivedPublisher = PassthroughSubject<Void, Never>()
     let allDataPublisher = PassthroughSubject<SensorData, Never>()
@@ -37,6 +43,10 @@ class TCPService: NSObject, ObservableObject {
             }
         }
         
+        // 手動で開始された場合、再接続試行回数をリセット
+        shouldAutoReconnect = true
+        reconnectAttempts = 0
+        
         let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host(host), port: NWEndpoint.Port(integerLiteral: port))
         connection = NWConnection(to: endpoint, using: .tcp)
         
@@ -51,6 +61,8 @@ class TCPService: NSObject, ObservableObject {
     }
     
     func stopConnection() {
+        shouldAutoReconnect = false
+        reconnectAttempts = 0
         connection?.cancel()
         connection = nil
         
@@ -67,6 +79,7 @@ class TCPService: NSObject, ObservableObject {
         case .ready:
             isConnected = true
             connectionState = "Connected"
+            reconnectAttempts = 0  // 接続成功時はリセット
             print("🌐 TCP connection established")
             receiveData()
             
@@ -80,8 +93,13 @@ class TCPService: NSObject, ObservableObject {
             connectionState = "Failed"
             print("🌐 TCP connection failed: \(error)")
             
-            // 再接続は手動で行うか、必要に応じて実装
-            // 自動再接続は現在無効化
+            // 自動再接続を試みる（制限あり）
+            if shouldAutoReconnect && reconnectAttempts < maxReconnectAttempts {
+                scheduleReconnection()
+            } else if reconnectAttempts >= maxReconnectAttempts {
+                print("🌐 Max reconnection attempts reached, stopping auto-reconnect")
+                shouldAutoReconnect = false
+            }
             
         case .cancelled:
             isConnected = false
@@ -101,6 +119,26 @@ class TCPService: NSObject, ObservableObject {
         connection?.cancel()
         connection = nil
         startConnection()
+    }
+    
+    private func scheduleReconnection() {
+        reconnectAttempts += 1
+        let delay = baseReconnectDelay * pow(2.0, Double(reconnectAttempts - 1))
+        let maxDelay: TimeInterval = 30.0
+        let actualDelay = min(delay, maxDelay)
+        
+        print("🌐 Scheduling reconnection attempt \(reconnectAttempts)/\(maxReconnectAttempts) in \(actualDelay)s")
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + actualDelay) { [weak self] in
+            guard let self = self,
+                  self.shouldAutoReconnect,
+                  !self.isConnected else {
+                print("🌐 Reconnection cancelled or already connected")
+                return
+            }
+            
+            self.reconnect()
+        }
     }
     
     private func receiveData() {

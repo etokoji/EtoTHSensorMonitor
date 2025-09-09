@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var sharedViewModel = SensorViewModel()
     @State private var showingSettings = false
+    @State private var isAppActive = true
     
     var body: some View {
         TabView {
@@ -36,6 +37,49 @@ struct ContentView: View {
             print("🚀 App started - initializing bluetooth scanning")
             sharedViewModel.startScanning()
         }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            print("📱 App will enter foreground")
+            isAppActive = true
+            handleAppBecameActive()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
+            print("📱 App entered background")
+            isAppActive = false
+            handleAppEnteredBackground()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            print("📱 App became active")
+            isAppActive = true
+            handleAppBecameActive()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+            print("📱 App will resign active")
+            isAppActive = false
+        }
+    }
+    
+    // MARK: - App Lifecycle Methods
+    
+    private func handleAppBecameActive() {
+        print("🔄 Handling app became active")
+        
+        // TCP接続が有効であるのに接続していない場合、再接続を試みる
+        if sharedViewModel.tcpEnabled && !sharedViewModel.isTCPConnected {
+            print("🌐 TCP enabled but not connected, attempting reconnection")
+            sharedViewModel.startTCPConnection()
+        }
+        
+        // Bluetoothスキャンが停止している場合、再開してみる
+        if !sharedViewModel.isScanning && !sharedViewModel.isTCPConnected {
+            print("📶 Bluetooth not scanning and TCP not connected, restarting scan")
+            sharedViewModel.startScanning()
+        }
+    }
+    
+    private func handleAppEnteredBackground() {
+        print("🔄 Handling app entered background")
+        // バックグラウンド時の特別な処理が必要な場合はここに追加
+        // 現在は特に何もしない（TCPは自動的に管理される）
     }
 }
 
