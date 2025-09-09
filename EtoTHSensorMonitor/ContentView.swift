@@ -21,10 +21,10 @@ struct ContentView: View {
                 Text("ホーム")
             }
             
-            RealtimeScanView(viewModel: sharedViewModel)
+            HistoryView(viewModel: sharedViewModel)
                 .tabItem {
-                    Image(systemName: "sensor.tag.radiowaves.forward.fill")
-                    Text("リアルタイム")
+                    Image(systemName: "clock.arrow.circlepath")
+                    Text("履歴")
                 }
         }
         .accentColor(.blue)
@@ -39,7 +39,7 @@ struct ContentView: View {
     }
 }
 
-struct RealtimeScanView: View {
+struct HistoryView: View {
     @ObservedObject var viewModel: SensorViewModel
     @State private var showDataReceivedIndicator = false
     
@@ -74,7 +74,7 @@ struct RealtimeScanView: View {
                     .allowsHitTesting(false)
                 }
             }
-            .navigationTitle("リアルタイムスキャン")
+            .navigationTitle("センサー履歴")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -102,11 +102,11 @@ struct RealtimeScanView: View {
         }
         .onAppear {
             // スキャンは既にContentViewで開始されているはず
-            print("📶 RealtimeScanView appeared - scanning status: \(viewModel.isScanning)")
+            print("📶 HistoryView appeared - scanning status: \(viewModel.isScanning)")
             
             // フォールバックとしてスキャンが開始されていない場合のみ開始
             if !viewModel.isScanning {
-                print("⚠️ Scanning not active, starting from RealtimeScanView")
+                print("⚠️ Scanning not active, starting from HistoryView")
                 viewModel.startScanning()
             }
         }
