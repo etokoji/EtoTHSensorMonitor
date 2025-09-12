@@ -3,84 +3,165 @@ import SwiftUI
 struct SensorReadingView: View {
     let sensorData: SensorData
     let isHighlighted: Bool
+    var isLandscapeCompact: Bool = false
     
     @State private var highlightOpacity: Double = 0.0
     
+    private var isIPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+    
     var body: some View {
-        VStack(spacing: 6) {
-            // First line: Device info and timestamp
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 6) {
-                        Text("ID:\(sensorData.deviceId)")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(.primary)
+        Group {
+            if isLandscapeCompact {
+                // ランドスケープ用: 1行レイアウト
+                HStack(spacing: 12) {
+                    // デバイスIDと種別
+                    HStack(spacing: 4) {
+                    Text("ID:\(sensorData.deviceId)")
+                        .font(isIPad ? .subheadline : .caption2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.primary)
+                    
+                    Text(sensorData.deviceAddress.hasPrefix("TCP_") ? "TCP" : "BLE")
+                        .font(isIPad ? .subheadline : .caption2)
+                        .foregroundColor(.secondary)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 1)
+                            .background(Color.secondary.opacity(0.1))
+                            .cornerRadius(3)
+                    }
+                    
+                // 時刻
+                Text(sensorData.formattedTimestamp)
+                    .font(isIPad ? .subheadline : .caption2)
+                    .foregroundColor(.secondary)
+                    .frame(width: isIPad ? 110 : 70)
+                    
+                // センサー値を横一列に
+                HStack(spacing: isIPad ? 32 : 16) {
+                        CompactSensorValue(
+                            title: "温",
+                            value: sensorData.formattedTemperature,
+                            color: temperatureColor
+                        )
                         
-                        if let deviceName = sensorData.deviceName {
-                            Text(deviceName)
+                        CompactSensorValue(
+                            title: "湿",
+                            value: sensorData.formattedHumidity,
+                            color: humidityColor
+                        )
+                        
+                        CompactSensorValue(
+                            title: "気",
+                            value: sensorData.formattedPressure,
+                            color: pressureColor
+                        )
+                    }
+                    
+                    Spacer()
+                    
+                    // RSSIと電圧
+                    HStack(spacing: 8) {
+                        HStack(spacing: 2) {
+                            rssiIcon
+                            Text("\(sensorData.rssi)dBm")
+                                .font(isIPad ? .subheadline : .caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Text(sensorData.formattedVoltage)
+                            .font(isIPad ? .subheadline : .caption2)
+                            .foregroundColor(voltageColor)
+                            .fontWeight(.medium)
+                    }
+                    
+                    // グループ件数
+                    if sensorData.groupedCount > 1 {
+                        Text("(\(sensorData.groupedCount)件)")
+                            .font(isIPad ? .subheadline : .caption2)
+                            .foregroundColor(.blue)
+                            .fontWeight(.medium)
+                    }
+                }
+                .padding(.horizontal, isIPad ? 24 : 12)
+                .padding(.vertical, isIPad ? 16 : 6)
+            } else {
+                // 通常表示: 縦方向レイアウト
+                VStack(spacing: 6) {
+                    // First line: Device info and timestamp
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 6) {
+                                Text("ID:\(sensorData.deviceId)")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.primary)
+                                
+                                Text(sensorData.deviceAddress.hasPrefix("TCP_") ? "TCP" : "BLE")
+                                    .font(isIPad ? .caption : .caption2)
+                                    .foregroundColor(.secondary)
+                                
+                                if sensorData.groupedCount > 1 {
+                                    Text("(\(sensorData.groupedCount)件)")
+                                        .font(.caption2)
+                                        .foregroundColor(.blue)
+                                        .fontWeight(.medium)
+                                }
+                            }
+                            
+                            Text(sensorData.formattedTimestamp)
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
                         
-                        if sensorData.groupedCount > 1 {
-                            Text("(\(sensorData.groupedCount)件)")
-                                .font(.caption2)
-                                .foregroundColor(.blue)
-                                .fontWeight(.medium)
+                        Spacer()
+                        
+                        // RSSI and Voltage in compact form
+                        HStack(spacing: 8) {
+                            HStack(spacing: 2) {
+                                rssiIcon
+                                Text("\(sensorData.rssi)dBm")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            HStack(spacing: 2) {
+                                Text(sensorData.formattedVoltage)
+                                    .font(.caption2)
+                                    .foregroundColor(voltageColor)
+                                    .fontWeight(.medium)
+                            }
                         }
                     }
                     
-                    Text(sensorData.formattedTimestamp)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                // RSSI and Voltage in compact form
-                HStack(spacing: 8) {
-                    HStack(spacing: 2) {
-                        rssiIcon
-                        Text("\(sensorData.rssi)")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
+                    // Second line: Sensor readings in compact horizontal layout
+                    HStack(spacing: 16) {
+                        CompactSensorValue(
+                            title: "温度",
+                            value: sensorData.formattedTemperature,
+                            color: temperatureColor
+                        )
+                        
+                        CompactSensorValue(
+                            title: "湿度",
+                            value: sensorData.formattedHumidity,
+                            color: humidityColor
+                        )
+                        
+                        CompactSensorValue(
+                            title: "気圧",
+                            value: sensorData.formattedPressure,
+                            color: pressureColor
+                        )
+                        
+                        Spacer()
                     }
-                    
-                    HStack(spacing: 2) {
-                        Text(sensorData.formattedVoltage)
-                            .font(.caption2)
-                            .foregroundColor(voltageColor)
-                            .fontWeight(.medium)
-                    }
                 }
-            }
-            
-            // Second line: Sensor readings in compact horizontal layout
-            HStack(spacing: 16) {
-                CompactSensorValue(
-                    title: "温度",
-                    value: sensorData.formattedTemperature,
-                    color: temperatureColor
-                )
-                
-                CompactSensorValue(
-                    title: "湿度",
-                    value: sensorData.formattedHumidity,
-                    color: humidityColor
-                )
-                
-                CompactSensorValue(
-                    title: "気圧",
-                    value: sensorData.formattedPressure,
-                    color: pressureColor
-                )
-                
-                Spacer()
+                .padding(.horizontal, isIPad ? 16 : 12)
+                .padding(.vertical, isIPad ? 12 : 8)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
         .background(
             ZStack {
                 // 基本背景
@@ -202,14 +283,18 @@ struct CompactSensorValue: View {
     let value: String
     let color: Color
     
+    private var isIPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+    
     var body: some View {
         HStack(spacing: 3) {
             Text(title)
-                .font(.caption2)
+                .font(isIPad ? .subheadline : .caption2)
                 .foregroundColor(.secondary)
             
             Text(value)
-                .font(.caption)
+                .font(isIPad ? .body : .caption)
                 .foregroundColor(color)
                 .fontWeight(.semibold)
         }
@@ -248,7 +333,7 @@ struct SensorValueView: View {
                 readingId: 123,
                 temperatureCelsius: 23.5,
                 humidityPercent: 65.2,
-                pressureHPa: 1013.2, // 標準大気圧 (hPa単位)
+                pressureHPa: 1013.2,
                 voltageVolts: 3.45,
                 groupedCount: 1
             ),
@@ -265,9 +350,9 @@ struct SensorValueView: View {
                 readingId: 456,
                 temperatureCelsius: 25.8,
                 humidityPercent: 58.3,
-                pressureHPa: 1025.0, // 高気圧 (hPa単位)
+                pressureHPa: 1025.0,
                 voltageVolts: 3.67,
-                groupedCount: 5  // 5件グループの例
+                groupedCount: 5
             ),
             isHighlighted: true
         )

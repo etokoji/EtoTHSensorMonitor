@@ -233,6 +233,24 @@ class CompositeDataService: ObservableObject {
         tcpEnabled.toggle()
     }
     
+    /// WiFi設定完了後のTCP再接続用
+    func forceReconnectTCP() {
+        print("🌐 Force TCP reconnection after WiFi setup")
+        
+        // tcpEnabledの状態変更を使用して確実に再接続をトリガー
+        if tcpEnabled {
+            // 一度無効にして有効に戻すことで、handleConnectionPriorityChange()を確実に呼び出す
+            tcpEnabled = false
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.tcpEnabled = true
+            }
+        } else {
+            // 既に無効な場合は有効にする
+            tcpEnabled = true
+        }
+    }
+    
     // MARK: - Computed Properties
     
     var hasReadings: Bool {

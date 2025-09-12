@@ -33,6 +33,32 @@ struct ContentView: View {
             SettingsView(viewModel: sharedViewModel)
         }
         .onAppear {
+            // タブバーの見た目をカスタマイズ
+            let tabBarAppearance = UITabBarAppearance()
+            tabBarAppearance.configureWithOpaqueBackground()
+            tabBarAppearance.backgroundColor = UIColor.systemGray6 // 背景色を設定
+            
+            // 選択されていないタブの色
+            tabBarAppearance.stackedLayoutAppearance.normal.titleTextAttributes = [
+                .font: UIFont.systemFont(ofSize: 14, weight: .medium),
+                .foregroundColor: UIColor.systemGray
+            ]
+            tabBarAppearance.stackedLayoutAppearance.normal.iconColor = UIColor.systemGray
+            
+            // 選択されたタブの色
+            tabBarAppearance.stackedLayoutAppearance.selected.titleTextAttributes = [
+                .font: UIFont.systemFont(ofSize: 14, weight: .semibold),
+                .foregroundColor: UIColor.systemBlue
+            ]
+            tabBarAppearance.stackedLayoutAppearance.selected.iconColor = UIColor.systemBlue
+            
+            // 上部に境界線を追加
+            tabBarAppearance.shadowColor = UIColor.systemGray4
+            tabBarAppearance.shadowImage = UIImage()
+            
+            UITabBar.appearance().standardAppearance = tabBarAppearance
+            UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+            
             // アプリ起動時にグローバルにスキャンを開始
             print("🚀 App started - initializing bluetooth scanning")
             sharedViewModel.startScanning()
@@ -86,6 +112,11 @@ struct ContentView: View {
 struct HistoryView: View {
     @ObservedObject var viewModel: SensorViewModel
     @State private var showDataReceivedIndicator = false
+    @State private var isLandscape = false
+    
+    private var isIPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
     
     var body: some View {
         NavigationView {
@@ -144,7 +175,7 @@ struct HistoryView: View {
                 }
             }
         }
-        .onAppear {
+.onAppear {
             // スキャンは既にContentViewで開始されているはず
             print("📶 HistoryView appeared - scanning status: \(viewModel.isScanning)")
             
@@ -153,6 +184,12 @@ struct HistoryView: View {
                 print("⚠️ Scanning not active, starting from HistoryView")
                 viewModel.startScanning()
             }
+            
+            // 初期化時に向きをチェック
+            updateOrientation()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+            updateOrientation()
         }
     }
     
@@ -188,11 +225,13 @@ struct HistoryView: View {
     
     private var sensorHistoryView: some View {
         ScrollView {
-            LazyVStack(spacing: 6) {
+            // 縦スクロールは共通、ランドスケープではレコードをコンパクト表示
+            LazyVStack(spacing: isLandscape ? 3 : 6) {
                 ForEach(viewModel.sensorReadings) { reading in
                     SensorReadingView(
                         sensorData: reading,
-                        isHighlighted: viewModel.highlightedReadingIds.contains(reading.id)
+                        isHighlighted: viewModel.highlightedReadingIds.contains(reading.id),
+                        isLandscapeCompact: isLandscape || isIPad
                     )
                     .padding(.horizontal, 8)
                 }
@@ -241,6 +280,13 @@ struct HistoryView: View {
             return .gray
         default:
             return .orange
+        }
+    }
+    
+    private func updateOrientation() {
+        let orientation = UIDevice.current.orientation
+        withAnimation(.easeInOut(duration: 0.3)) {
+            isLandscape = orientation.isLandscape
         }
     }
 }

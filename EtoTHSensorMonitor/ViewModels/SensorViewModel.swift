@@ -31,7 +31,7 @@ class SensorViewModel: ObservableObject {
     // 全データ受信通知用（重複含む）
     let dataReceivedSubject = PassthroughSubject<Void, Never>()
     
-    private let dataService: CompositeDataService
+    let dataService: CompositeDataService
     private var cancellables = Set<AnyCancellable>()
     private var shouldStartScanningWhenReady = false
     

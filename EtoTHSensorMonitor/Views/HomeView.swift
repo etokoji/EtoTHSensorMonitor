@@ -3,6 +3,11 @@ import SwiftUI
 struct HomeView: View {
     @ObservedObject var viewModel: SensorViewModel
     @State private var showDataReceivedIndicator = false
+    @State private var isLandscape = false
+    
+    private var isIPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
     
     private var latestSensorData: SensorData? {
         // 履歴データから最新を取得（重複も含む）
@@ -23,11 +28,11 @@ struct HomeView: View {
             )
             .ignoresSafeArea()
             
-            VStack(spacing: 40) {
-                // Header
-                VStack(spacing: 10) {
+            VStack(spacing: isLandscape && !isIPad ? 20 : 40) {
+                // Header - smaller in landscape
+                VStack(spacing: isLandscape && !isIPad ? 5 : 10) {
                     Text("ESP32センサー")
-                        .font(.largeTitle)
+                        .font(isLandscape && !isIPad ? .title : .largeTitle)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
                     
@@ -36,45 +41,87 @@ struct HomeView: View {
                     
                     if let data = latestSensorData {
                         Text("最終更新: \(formattedTimestamp(data.timestamp))")
-                            .font(.subheadline)
+                            .font(isLandscape && !isIPad ? .caption : .subheadline)
                             .foregroundColor(.secondary)
                     } else {
                         Text("データ待機中...")
-                            .font(.subheadline)
+                            .font(isLandscape && !isIPad ? .caption : .subheadline)
                             .foregroundColor(.secondary)
                     }
                 }
                 
                 if let data = latestSensorData {
-                    // Main sensor data display
-                    VStack(spacing: 30) {
-                        SensorCard(
-                            title: "温度",
-                            value: data.formattedTemperature,
-                            icon: "thermometer",
-                            color: .red
-                        )
-                        
-                        SensorCard(
-                            title: "湿度",
-                            value: data.formattedHumidity,
-                            icon: "humidity",
-                            color: .blue
-                        )
-                        
-                        SensorCard(
-                            title: "気圧",
-                            value: data.formattedPressure,
-                            icon: "barometer",
-                            color: .orange
-                        )
-                        
-                        SensorCard(
-                            title: "電圧",
-                            value: data.formattedVoltage,
-                            icon: "battery.100",
-                            color: .green
-                        )
+                    // Main sensor data display - adaptive layout
+                    if isLandscape || isIPad {
+                        // Landscape or iPad: 2x2 grid
+                        VStack(spacing: isIPad ? 30 : (isLandscape ? 10 : 20)) {
+                            HStack(spacing: isIPad ? 30 : (isLandscape ? 12 : 20)) {
+                                SensorCard(
+                                    title: "温度",
+                                    value: data.formattedTemperature,
+                                    icon: "thermometer",
+                                    color: .red,
+                                    isCompact: !isIPad
+                                )
+                                
+                                SensorCard(
+                                    title: "湿度",
+                                    value: data.formattedHumidity,
+                                    icon: "humidity",
+                                    color: .blue,
+                                    isCompact: !isIPad
+                                )
+                            }
+                            
+                            HStack(spacing: isIPad ? 30 : (isLandscape ? 12 : 20)) {
+                                SensorCard(
+                                    title: "気圧",
+                                    value: data.formattedPressure,
+                                    icon: "barometer",
+                                    color: .orange,
+                                    isCompact: !isIPad
+                                )
+                                
+                                SensorCard(
+                                    title: "電圧",
+                                    value: data.formattedVoltage,
+                                    icon: "battery.100",
+                                    color: .green,
+                                    isCompact: !isIPad
+                                )
+                            }
+                        }
+                    } else {
+                        // Portrait: vertical stack
+                        VStack(spacing: 30) {
+                            SensorCard(
+                                title: "温度",
+                                value: data.formattedTemperature,
+                                icon: "thermometer",
+                                color: .red
+                            )
+                            
+                            SensorCard(
+                                title: "湿度",
+                                value: data.formattedHumidity,
+                                icon: "humidity",
+                                color: .blue
+                            )
+                            
+                            SensorCard(
+                                title: "気圧",
+                                value: data.formattedPressure,
+                                icon: "barometer",
+                                color: .orange
+                            )
+                            
+                            SensorCard(
+                                title: "電圧",
+                                value: data.formattedVoltage,
+                                icon: "battery.100",
+                                color: .green
+                            )
+                        }
                     }
                 } else {
                     // No data state
@@ -95,10 +142,14 @@ struct HomeView: View {
                     .padding(.top, 50)
                 }
                 
-                Spacer()
+                if !isLandscape {
+                    Spacer()
+                }
             }
             .padding(.horizontal, 20)
-            .padding(.top, 20)
+            .padding(.top, isLandscape && !isIPad ? 10 : 20)
+            .padding(.vertical, isLandscape && !isIPad ? 0 : 20)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: isLandscape ? .center : .top)
             
             // Data received indicator
             if showDataReceivedIndicator {
@@ -125,6 +176,11 @@ struct HomeView: View {
                 viewModel.startScanning()
             }
             
+            // 初期化時に向きをチェック
+            updateOrientation()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+            updateOrientation()
         }
         .onReceive(viewModel.dataReceivedSubject) { _ in
             withAnimation(.easeInOut(duration: 0.3)) {
@@ -136,6 +192,13 @@ struct HomeView: View {
                     showDataReceivedIndicator = false
                 }
             }
+        }
+    }
+    
+    private func updateOrientation() {
+        let orientation = UIDevice.current.orientation
+        withAnimation(.easeInOut(duration: 0.3)) {
+            isLandscape = orientation.isLandscape
         }
     }
     
@@ -153,37 +216,75 @@ struct SensorCard: View {
     let value: String
     let icon: String
     let color: Color
+    var isCompact: Bool = false
     
     var body: some View {
-        HStack(spacing: 20) {
-            // Icon
-            Image(systemName: icon)
-                .font(.system(size: 30))
-                .foregroundColor(color)
-                .frame(width: 60, height: 60)
-                .background(color.opacity(0.1))
-                .clipShape(Circle())
-            
-            // Content
-            VStack(alignment: .leading, spacing: 5) {
-                Text(title)
-                    .font(.headline)
-                    .foregroundColor(.secondary)
+        if isCompact {
+            // Compact layout for landscape/grid view - horizontal like portrait but smaller
+            HStack(spacing: 15) {
+                // Icon - smaller than portrait
+                Image(systemName: icon)
+                    .font(.system(size: 24))
+                    .foregroundColor(color)
+                    .frame(width: 45, height: 45)
+                    .background(color.opacity(0.1))
+                    .clipShape(Circle())
                 
-                Text(value)
-                    .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .foregroundColor(.primary)
+                // Content
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    Text(value)
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                }
+                
+                Spacer()
             }
-            
-            Spacer()
+            .frame(maxWidth: .infinity, minHeight: 60)
+            .padding(.horizontal, 15)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color(.systemBackground))
+                    .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
+            )
+        } else {
+            // Full layout for portrait view
+            HStack(spacing: 20) {
+                // Icon
+                Image(systemName: icon)
+                    .font(.system(size: 30))
+                    .foregroundColor(color)
+                    .frame(width: 60, height: 60)
+                    .background(color.opacity(0.1))
+                    .clipShape(Circle())
+                
+                // Content
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(title)
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    
+                    Text(value)
+                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
+                }
+                
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 15)
+            .background(
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(Color(.systemBackground))
+                    .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+            )
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 15)
-        .background(
-            RoundedRectangle(cornerRadius: 15)
-                .fill(Color(.systemBackground))
-                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
-        )
     }
 }
 

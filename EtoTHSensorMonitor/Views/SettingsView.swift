@@ -12,6 +12,17 @@ struct SettingsView: View {
                     // TCP接続の有効/無効
                     Toggle("TCPサーバ接続", isOn: $viewModel.tcpEnabled)
                     
+                    // WiFi設定画面へのナビゲーション
+                    NavigationLink(destination: WiFiSettingsView(compositeDataService: viewModel.dataService)) {
+                        HStack {
+                            Image(systemName: "wifi")
+                                .foregroundColor(.blue)
+                                .frame(width: 24, height: 24)
+                            Text("WiFi設定")
+                            Spacer()
+                        }
+                    }
+                    
                     // 接続状態表示
                     VStack(alignment: .leading, spacing: 4) {
                         Text("接続状態")
