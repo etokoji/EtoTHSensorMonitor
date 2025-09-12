@@ -415,7 +415,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = EtoTHSensorMonitor/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "ESP32センサー";
+				INFOPLIST_KEY_CFBundleDisplayName = "温度センサー表示";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "このアプリは、ESP32デバイスからのセンサーデータを受信するためにBluetoothを使用します。";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "ESP32センサーからの環境データ（温度、湿度、電圧）を受信するためにBluetoothアクセスが必要です。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -448,7 +448,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = EtoTHSensorMonitor/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "ESP32センサー";
+				INFOPLIST_KEY_CFBundleDisplayName = "温度センサー表示";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "このアプリは、ESP32デバイスからのセンサーデータを受信するためにBluetoothを使用します。";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "ESP32センサーからの環境データ（温度、湿度、電圧）を受信するためにBluetoothアクセスが必要です。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
