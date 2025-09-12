@@ -31,7 +31,7 @@ struct HomeView: View {
             VStack(spacing: isLandscape && !isIPad ? 20 : 40) {
                 // Header - smaller in landscape
                 VStack(spacing: isLandscape && !isIPad ? 5 : 10) {
-                    Text("ESP32センサー")
+                    Text("温度センサー表示")
                         .font(isLandscape && !isIPad ? .title : .largeTitle)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
