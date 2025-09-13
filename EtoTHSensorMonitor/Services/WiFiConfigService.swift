@@ -59,9 +59,11 @@ class WiFiConfigService: NSObject, ObservableObject {
 
         scanTimer?.invalidate()
         scanTimer = Timer.scheduledTimer(withTimeInterval: scanTimeout, repeats: false) { [weak self] _ in
-            self?.stopScanning()
-            if self?.discoveredDevices.isEmpty ?? true {
-                self?.state = .failed(error: "デバイスが見つかりませんでした")
+            Task { @MainActor in
+                self?.stopScanning()
+                if self?.discoveredDevices.isEmpty ?? true {
+                    self?.state = .failed(error: "デバイスが見つかりませんでした")
+                }
             }
         }
     }
@@ -113,7 +115,7 @@ class WiFiConfigService: NSObject, ObservableObject {
     }
     
     func sendCredentials(ssid: String, password: String) {
-        guard let characteristic = credentialsCharacteristic else {
+        guard credentialsCharacteristic != nil else {
             state = .failed(error: "書き込み用のキャラクタリスティックが見つかりません")
             return
         }
@@ -146,8 +148,10 @@ class WiFiConfigService: NSObject, ObservableObject {
             print("[WiFiSetup] 全データ送信完了 (\(data.count) bytes)")
             self.dataToSend = nil
             self.dataOffset = 0
-            if let currentDevice = discoveredDevices.first(where: { $0.id == peripheral.identifier }) {
-                 state = .waitingForStatus(device: currentDevice)
+            Task { @MainActor in
+                if let currentDevice = discoveredDevices.first(where: { $0.id == peripheral.identifier }) {
+                     state = .waitingForStatus(device: currentDevice)
+                }
             }
             return
         }
@@ -195,13 +199,19 @@ extension WiFiConfigService: @preconcurrency CBCentralManagerDelegate {
             }
         case .poweredOff:
             print("[WiFiSetup] Bluetoothが無効です")
-            state = .failed(error: "Bluetoothが無効です")
+            Task { @MainActor in
+                state = .failed(error: "Bluetoothが無効です")
+            }
         case .unauthorized:
             print("[WiFiSetup] Bluetoothの使用が許可されていません")
-            state = .failed(error: "Bluetoothの使用が許可されていません")
+            Task { @MainActor in
+                state = .failed(error: "Bluetoothの使用が許可されていません")
+            }
         case .unsupported:
             print("[WiFiSetup] このデバイスはBluetoothをサポートしていません")
-            state = .failed(error: "Bluetoothがサポートされていません")
+            Task { @MainActor in
+                state = .failed(error: "Bluetoothがサポートされていません")
+            }
         case .unknown:
             print("[WiFiSetup] Bluetoothの状態が不明です")
         default:
@@ -215,9 +225,11 @@ extension WiFiConfigService: @preconcurrency CBCentralManagerDelegate {
         
         print("[WiFiSetup] 発見: \(deviceName) RSSI: \(RSSI.intValue)")
 
-        if !discoveredDevices.contains(where: { $0.id == peripheral.identifier }) {
-            let device = WiFiConfigDevice(id: peripheral.identifier, name: deviceName, rssi: RSSI.intValue, peripheral: peripheral)
-            discoveredDevices.append(device)
+        Task { @MainActor in
+            if !discoveredDevices.contains(where: { $0.id == peripheral.identifier }) {
+                let device = WiFiConfigDevice(id: peripheral.identifier, name: deviceName, rssi: RSSI.intValue, peripheral: peripheral)
+                discoveredDevices.append(device)
+            }
         }
     }
 
@@ -229,13 +241,17 @@ extension WiFiConfigService: @preconcurrency CBCentralManagerDelegate {
     }
 
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-        state = .failed(error: "接続に失敗しました: \(error?.localizedDescription ?? "不明なエラー")")
-        cleanup()
+        Task { @MainActor in
+            state = .failed(error: "接続に失敗しました: \(error?.localizedDescription ?? "不明なエラー")")
+            cleanup()
+        }
     }
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         print("[WiFiSetup] 切断されました")
-        cleanup()
+        Task { @MainActor in
+            cleanup()
+        }
     }
 }
 
@@ -266,8 +282,10 @@ extension WiFiConfigService: @preconcurrency CBPeripheralDelegate {
                 break
             }
         }
-        if let currentDevice = discoveredDevices.first(where: { $0.id == peripheral.identifier }) {
-            state = .connected(device: currentDevice)
+        Task { @MainActor in
+            if let currentDevice = discoveredDevices.first(where: { $0.id == peripheral.identifier }) {
+                state = .connected(device: currentDevice)
+            }
         }
     }
 
@@ -304,24 +322,32 @@ extension WiFiConfigService: @preconcurrency CBPeripheralDelegate {
             return
         }
 
-        if let currentDevice = discoveredDevices.first(where: { $0.id == peripheral.identifier }) {
-            switch status {
-            case "connected":
-                state = .completed(device: currentDevice, ipAddress: ipAddress ?? "N/A")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { self.disconnect() }
-            case "connecting", "waiting":
-                state = .waitingForStatus(device: currentDevice)
-            default:
-                state = .failed(error: "接続失敗: \(status)")
+        Task { @MainActor in
+            if let currentDevice = discoveredDevices.first(where: { $0.id == peripheral.identifier }) {
+                switch status {
+                case "connected":
+                    state = .completed(device: currentDevice, ipAddress: ipAddress ?? "N/A")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { 
+                        Task { @MainActor in
+                            self.disconnect() 
+                        }
+                    }
+                case "connecting", "waiting":
+                    state = .waitingForStatus(device: currentDevice)
+                default:
+                    state = .failed(error: "接続失敗: \(status)")
+                }
             }
         }
     }
 
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
         if let error = error {
-            state = .failed(error: "書き込み失敗: \(error.localizedDescription)")
-            self.dataToSend = nil
-            self.dataOffset = 0
+            Task { @MainActor in
+                state = .failed(error: "書き込み失敗: \(error.localizedDescription)")
+                self.dataToSend = nil
+                self.dataOffset = 0
+            }
             return
         }
 
