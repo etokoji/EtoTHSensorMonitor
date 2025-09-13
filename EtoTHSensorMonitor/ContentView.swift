@@ -195,9 +195,6 @@ struct HistoryView: View {
     
     private var statusHeader: some View {
         HStack {
-            // 通信状態インジケーター
-            ConnectionStatusIndicator(viewModel: viewModel, isCompact: true)
-            
             if !viewModel.sensorReadings.isEmpty {
                 Text("履歴: \(viewModel.sensorReadings.count) 件")
                     .font(.caption)

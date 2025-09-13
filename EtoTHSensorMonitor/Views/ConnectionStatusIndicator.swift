@@ -50,7 +50,7 @@ struct ConnectionStatusIndicator: View {
                 return "wifi.slash"
             }
         } else if viewModel.isScanning {
-            return "bluetooth"
+            return "antenna.radiowaves.left.and.right"  // BLEスキャン中を表すアイコン
         } else {
             return "antenna.radiowaves.left.and.right.slash"
         }
