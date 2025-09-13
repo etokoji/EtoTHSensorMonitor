@@ -20,8 +20,8 @@ def create_temperature_icon(size, output_path):
     # 背景色 - 温かみのあるグラデーション風
     bg_color = (70, 130, 180)  # Steel Blue
     
-    # 画像作成
-    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    # 画像作成 - RGBモードでアルファチャンネルを除去
+    img = Image.new('RGB', (size, size), bg_color)
     draw = ImageDraw.Draw(img)
     
     # 角丸四角形の背景
