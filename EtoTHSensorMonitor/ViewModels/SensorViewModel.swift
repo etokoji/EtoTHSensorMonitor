@@ -13,7 +13,7 @@ class SensorViewModel: ObservableObject {
     @Published var discoveredDevices: [String: SensorData] = [:]
     @Published var isScanning = false
     @Published var bluetoothState: CBManagerState = .unknown
-    @Published var selectedDeviceId: UInt8?
+    @Published var selectedDeviceId: UInt8? = nil
     @Published var errorMessage: String?
     
     // TCP関連のプロパティ
@@ -24,7 +24,7 @@ class SensorViewModel: ObservableObject {
     
     // ハイライト管理用
     @Published var highlightedReadingIds: Set<UUID> = []
-    
+    @Published var showDataReceivedIndicator = false
     // センサーデータ受信通知用（値が変化した場合のみ）
     let sensorDataSubject = PassthroughSubject<SensorData, Never>()
     
@@ -172,6 +172,14 @@ class SensorViewModel: ObservableObject {
             sensorReadings[0] = updatedReading
             highlightedReadingIds.insert(updatedReading.id)
             
+            // 受信インジケーターを表示（グループ化時も）
+            showDataReceivedIndicator = true
+            
+            // 1.5秒後にインジケーターを非表示
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                self?.showDataReceivedIndicator = false
+            }
+            
             // 3秒後にハイライトを除去
             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
                 self?.highlightedReadingIds.remove(updatedReading.id)
@@ -182,6 +190,14 @@ class SensorViewModel: ObservableObject {
             
             // ハイライトアニメーションを開始
             highlightedReadingIds.insert(reading.id)
+            
+            // 受信インジケーターを表示
+            showDataReceivedIndicator = true
+            
+            // 1.5秒後にインジケーターを非表示
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                self?.showDataReceivedIndicator = false
+            }
             
             // 3秒後にハイライトを除去
             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in

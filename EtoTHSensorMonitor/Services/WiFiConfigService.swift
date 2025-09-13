@@ -19,6 +19,7 @@ class WiFiConfigService: NSObject, ObservableObject {
     // For chunked data transmission
     private var dataToSend: Data?
     private var dataOffset: Int = 0
+    private var currentSSID: String? // 現在設定中のSSIDを記録
     
     private var scanTimer: Timer?
     private let scanTimeout: TimeInterval = 15.0
@@ -119,6 +120,9 @@ class WiFiConfigService: NSObject, ObservableObject {
             state = .failed(error: "書き込み用のキャラクタリスティックが見つかりません")
             return
         }
+        
+        // 現在設定中のSSIDを保存
+        currentSSID = ssid
 
         let credentials = WiFiSetupGuide.Credentials(ssid: ssid, password: password)
         guard let data = try? JSONEncoder().encode(credentials) else {
@@ -177,6 +181,7 @@ class WiFiConfigService: NSObject, ObservableObject {
         credentialsCharacteristic = nil
         dataToSend = nil
         dataOffset = 0
+        currentSSID = nil
         // completed状態でもリセットされるように修正
         // これにresetToInitialState()から呼ばれた時はステートを保持
     }
@@ -223,7 +228,13 @@ extension WiFiConfigService: @preconcurrency CBCentralManagerDelegate {
         let deviceName = peripheral.name ?? ""
         guard !deviceName.isEmpty else { return }
         
-        print("[WiFiSetup] 発見: \(deviceName) RSSI: \(RSSI.intValue)")
+        // ESP32を含むデバイスのみをフィルタリング
+        guard deviceName.contains("ESP32") else {
+            print("[WiFiSetup] ESP32以外のデバイスをスキップ: \(deviceName)")
+            return
+        }
+        
+        print("[WiFiSetup] ESP32デバイス発見: \(deviceName) RSSI: \(RSSI.intValue)")
 
         Task { @MainActor in
             if !discoveredDevices.contains(where: { $0.id == peripheral.identifier }) {
@@ -326,6 +337,17 @@ extension WiFiConfigService: @preconcurrency CBPeripheralDelegate {
             if let currentDevice = discoveredDevices.first(where: { $0.id == peripheral.identifier }) {
                 switch status {
                 case "connected":
+                    // WiFi設定完了時にIPアドレスとSSIDを保存
+                    if let ipAddress = ipAddress, ipAddress != "N/A" {
+                        SettingsManager.shared.serverIPAddress = ipAddress
+                        print("[WiFiSetup] サーバーIPアドレスを保存: \(ipAddress)")
+                    }
+                    
+                    if let ssid = currentSSID {
+                        SettingsManager.shared.wifiSSID = ssid
+                        print("[WiFiSetup] WiFi SSIDを保存: \(ssid)")
+                    }
+                    
                     state = .completed(device: currentDevice, ipAddress: ipAddress ?? "N/A")
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { 
                         Task { @MainActor in

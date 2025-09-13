@@ -2,7 +2,6 @@ import SwiftUI
 
 struct HomeView: View {
     @ObservedObject var viewModel: SensorViewModel
-    @State private var showDataReceivedIndicator = false
     @State private var isLandscape = false
     
     private var isIPad: Bool {
@@ -19,15 +18,14 @@ struct HomeView: View {
     }
     
     var body: some View {
-        ZStack {
-            // Background gradient
-            LinearGradient(
-                gradient: Gradient(colors: [Color.blue.opacity(0.1), Color.green.opacity(0.1)]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
+        // Background gradient
+        LinearGradient(
+            gradient: Gradient(colors: [Color.blue.opacity(0.1), Color.green.opacity(0.1)]),
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+        .overlay(
             VStack(spacing: isLandscape && !isIPad ? 20 : 40) {
                 // Header - smaller in landscape
                 VStack(spacing: isLandscape && !isIPad ? 5 : 10) {
@@ -150,20 +148,7 @@ struct HomeView: View {
             .padding(.top, isLandscape && !isIPad ? 10 : 20)
             .padding(.vertical, isLandscape && !isIPad ? 0 : 20)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: isLandscape ? .center : .top)
-            
-            // Data received indicator
-            if showDataReceivedIndicator {
-                VStack {
-                    HStack {
-                        Spacer()
-                        DataReceivedIndicator()
-                            .padding(.trailing, 20)
-                    }
-                    Spacer()
-                }
-                .allowsHitTesting(false)
-            }
-        }
+        )
         .navigationTitle("ホーム")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
@@ -181,17 +166,6 @@ struct HomeView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
             updateOrientation()
-        }
-        .onReceive(viewModel.dataReceivedSubject) { _ in
-            withAnimation(.easeInOut(duration: 0.3)) {
-                showDataReceivedIndicator = true
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    showDataReceivedIndicator = false
-                }
-            }
         }
     }
     

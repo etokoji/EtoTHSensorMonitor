@@ -8,14 +8,30 @@ struct ContentView: View {
     var body: some View {
         TabView {
             NavigationView {
-                HomeView(viewModel: sharedViewModel)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button(action: { showingSettings = true }) {
-                                Image(systemName: "gearshape.fill")
+                ZStack {
+                    HomeView(viewModel: sharedViewModel)
+                    
+                    // Data received indicator positioned relative to toolbar
+                    if sharedViewModel.showDataReceivedIndicator {
+                        VStack {
+                            HStack {
+                                Spacer()
+                                DataReceivedIndicator()
+                                    .padding(.trailing, 60) // 歯車アイコンの左に配置
                             }
+                            .padding(.top, -35) // ナビゲーションバーの高さに合わせて調整
+                            Spacer()
+                        }
+                        .allowsHitTesting(false)
+                    }
+                }
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: { showingSettings = true }) {
+                            Image(systemName: "gearshape.fill")
                         }
                     }
+                }
             }
             .tabItem {
                 Image(systemName: "house.fill")
@@ -111,7 +127,6 @@ struct ContentView: View {
 
 struct HistoryView: View {
     @ObservedObject var viewModel: SensorViewModel
-    @State private var showDataReceivedIndicator = false
     @State private var isLandscape = false
     
     private var isIPad: Bool {
@@ -136,14 +151,15 @@ struct HistoryView: View {
                 }
                 .padding()
                 
-                // Data received indicator
-                if showDataReceivedIndicator {
+                // Data received indicator positioned relative to toolbar
+                if viewModel.showDataReceivedIndicator {
                     VStack {
                         HStack {
                             Spacer()
                             DataReceivedIndicator()
-                                .padding(.trailing, 20)
+                                .padding(.trailing, 60) // スキャンボタンの左に配置
                         }
+                        .padding(.top, -35) // ナビゲーションバーの高さに合わせて調整
                         Spacer()
                     }
                     .allowsHitTesting(false)
@@ -164,18 +180,7 @@ struct HistoryView: View {
                 }
             }
         }
-        .onReceive(viewModel.sensorDataSubject) { _ in
-            withAnimation(.easeInOut(duration: 0.3)) {
-                showDataReceivedIndicator = true
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    showDataReceivedIndicator = false
-                }
-            }
-        }
-.onAppear {
+        .onAppear {
             // スキャンは既にContentViewで開始されているはず
             print("📶 HistoryView appeared - scanning status: \(viewModel.isScanning)")
             

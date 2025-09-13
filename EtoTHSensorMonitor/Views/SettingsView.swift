@@ -41,7 +41,7 @@ struct SettingsView: View {
                             Text("サーバ情報")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                            Text("192.168.1.89:8080")
+                            Text("\(settings.serverIPAddress):8080")
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
                             Text("接続状態: \(viewModel.tcpConnectionState)")
@@ -49,6 +49,29 @@ struct SettingsView: View {
                                 .foregroundColor(
                                     viewModel.isTCPConnected ? .green : .orange
                                 )
+                        }
+                    }
+                    
+                    // WiFi接続情報表示
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("WiFi接続情報")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        HStack {
+                            Text("SSID:")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                            Text(settings.wifiSSID)
+                                .font(.footnote)
+                                .foregroundColor(settings.wifiSSID == "未設定" ? .orange : .primary)
+                        }
+                        HStack {
+                            Text("サーバIP:")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                            Text(settings.serverIPAddress)
+                                .font(.footnote)
+                                .foregroundColor(.primary)
                         }
                     }
                 }

@@ -86,6 +86,20 @@ class SettingsManager: ObservableObject {
         }
     }
     
+    // TCP サーバーIPアドレス
+    @Published var serverIPAddress: String {
+        didSet {
+            UserDefaults.standard.set(serverIPAddress, forKey: "serverIPAddress")
+        }
+    }
+    
+    // WiFi SSID
+    @Published var wifiSSID: String {
+        didSet {
+            UserDefaults.standard.set(wifiSSID, forKey: "wifiSSID")
+        }
+    }
+    
     private init() {
         // 保存された値を読み込み、なければデフォルト値を使用
         let savedBatteryType = UserDefaults.standard.string(forKey: "selectedBatteryType") ?? BatteryType.lithiumIon.rawValue
@@ -96,6 +110,8 @@ class SettingsManager: ObservableObject {
         self.lowVoltageThreshold = UserDefaults.standard.object(forKey: "lowVoltageThreshold") as? Double ?? batteryType.defaultLowVoltage
         self.batteryNotificationsEnabled = UserDefaults.standard.object(forKey: "batteryNotificationsEnabled") as? Bool ?? true
         self.notificationCooldownPeriod = UserDefaults.standard.object(forKey: "notificationCooldownPeriod") as? Double ?? 3600 // 1時間
+        self.serverIPAddress = UserDefaults.standard.string(forKey: "serverIPAddress") ?? "192.168.1.89" // デフォルトIP
+        self.wifiSSID = UserDefaults.standard.string(forKey: "wifiSSID") ?? "未設定" // デフォルトSSID
     }
     
     // 設定をデフォルト値にリセット
@@ -105,6 +121,8 @@ class SettingsManager: ObservableObject {
         lowVoltageThreshold = selectedBatteryType.defaultLowVoltage
         batteryNotificationsEnabled = true
         notificationCooldownPeriod = 3600
+        serverIPAddress = "192.168.1.89"
+        wifiSSID = "未設定"
     }
     
     // 電圧レベルを判定

@@ -8,9 +8,13 @@ class TCPService: NSObject, ObservableObject {
     @Published var discoveredDevices: [String: SensorData] = [:]
     
     private var connection: NWConnection?
-    private let host = "192.168.1.89"
     private let port: UInt16 = 8080
     private let queue = DispatchQueue(label: "TCPService")
+    
+    // 保存されたサーバーIPを取得
+    private var serverHost: String {
+        return SettingsManager.shared.serverIPAddress
+    }
     
     // 自動再接続のための変数
     private var shouldAutoReconnect = true
@@ -47,7 +51,8 @@ class TCPService: NSObject, ObservableObject {
         shouldAutoReconnect = true
         reconnectAttempts = 0
         
-        let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host(host), port: NWEndpoint.Port(integerLiteral: port))
+        let currentHost = serverHost
+        let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host(currentHost), port: NWEndpoint.Port(integerLiteral: port))
         connection = NWConnection(to: endpoint, using: .tcp)
         
         connection?.stateUpdateHandler = { [weak self] state in
@@ -57,7 +62,7 @@ class TCPService: NSObject, ObservableObject {
         }
         
         connection?.start(queue: queue)
-        print("🌐 Starting TCP connection to \(host):\(port)")
+        print("🌐 Starting TCP connection to \(currentHost):\(port)")
     }
     
     func stopConnection() {
