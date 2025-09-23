@@ -200,8 +200,8 @@ class TCPService: NSObject, ObservableObject {
             
             let sensorData = tcpSensorData.toSensorData(
                 deviceAddress: deviceAddress,
-                deviceName: "TCP Sensor \(tcpSensorData.dev_id)",
-                rssi: -30 // TCP接続なので良好な信号強度として設定
+                deviceName: "TCP Sensor \(tcpSensorData.dev_id)"
+                // TCP接続ではRSSI値は意味を持たないためnilを使用
             )
             
             DispatchQueue.main.async {

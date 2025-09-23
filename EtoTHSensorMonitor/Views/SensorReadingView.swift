@@ -63,11 +63,23 @@ struct SensorReadingView: View {
                     
                     // RSSIと電圧
                     HStack(spacing: 8) {
-                        HStack(spacing: 2) {
-                            rssiIcon
-                            Text("\(sensorData.rssi)dBm")
-                                .font(isIPad ? .subheadline : .caption2)
-                                .foregroundColor(.secondary)
+                        // TCP接続時はRSSI表示を省略
+                        if let rssi = sensorData.rssi {
+                            HStack(spacing: 2) {
+                                rssiIcon
+                                Text("\(rssi)dBm")
+                                    .font(isIPad ? .subheadline : .caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                        } else {
+                            HStack(spacing: 2) {
+                                Image(systemName: "network")
+                                    .foregroundColor(.green)
+                                    .font(.caption)
+                                Text("TCP")
+                                    .font(isIPad ? .subheadline : .caption2)
+                                    .foregroundColor(.green)
+                            }
                         }
                         
                         Text(sensorData.formattedVoltage)
@@ -119,11 +131,23 @@ struct SensorReadingView: View {
                         
                         // RSSI and Voltage in compact form
                         HStack(spacing: 8) {
-                            HStack(spacing: 2) {
-                                rssiIcon
-                                Text("\(sensorData.rssi)dBm")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
+                            // TCP接続時はRSSI表示を省略
+                            if let rssi = sensorData.rssi {
+                                HStack(spacing: 2) {
+                                    rssiIcon
+                                    Text("\(rssi)dBm")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
+                            } else {
+                                HStack(spacing: 2) {
+                                    Image(systemName: "network")
+                                        .foregroundColor(.green)
+                                        .font(.caption2)
+                                    Text("TCP")
+                                        .font(.caption2)
+                                        .foregroundColor(.green)
+                                }
                             }
                             
                             HStack(spacing: 2) {
@@ -217,9 +241,13 @@ struct SensorReadingView: View {
     }
     
     private var rssiIconName: String {
-        if sensorData.rssi >= Constants.rssiGoodThreshold {
+        guard let rssi = sensorData.rssi else {
+            return "network"  // TCP接続用アイコン
+        }
+        
+        if rssi >= Constants.rssiGoodThreshold {
             return "wifi.circle.fill"
-        } else if sensorData.rssi >= Constants.rssiFairThreshold {
+        } else if rssi >= Constants.rssiFairThreshold {
             return "wifi.circle"
         } else {
             return "wifi.slash"
@@ -227,9 +255,13 @@ struct SensorReadingView: View {
     }
     
     private var rssiColor: Color {
-        if sensorData.rssi >= Constants.rssiGoodThreshold {
+        guard let rssi = sensorData.rssi else {
+            return .green  // TCP接続は緑色
+        }
+        
+        if rssi >= Constants.rssiGoodThreshold {
             return .green
-        } else if sensorData.rssi >= Constants.rssiFairThreshold {
+        } else if rssi >= Constants.rssiFairThreshold {
             return .orange
         } else {
             return .red
@@ -323,7 +355,7 @@ struct SensorValueView: View {
 
 #Preview {
     VStack(spacing: 16) {
-        // 通常状態
+        // BLEデバイス（RSSIあり）
         SensorReadingView(
             sensorData: SensorData(
                 deviceAddress: "AA:BB:CC:DD:EE:FF",
@@ -340,19 +372,19 @@ struct SensorValueView: View {
             isHighlighted: false
         )
         
-        // グループ化されたデータ（ハイライト状態）
+        // TCPデバイス（RSSIなし）
         SensorReadingView(
             sensorData: SensorData(
-                deviceAddress: "BB:CC:DD:EE:FF:AA",
-                deviceName: "ESP32-ENV-02",
-                rssi: -42,
+                deviceAddress: "TCP_2",
+                deviceName: "TCP Sensor 2",
+                rssi: nil,  // TCP接続なのでnil
                 deviceId: 2,
                 readingId: 456,
                 temperatureCelsius: 25.8,
                 humidityPercent: 58.3,
                 pressureHPa: 1025.0,
                 voltageVolts: 3.67,
-                groupedCount: 5
+                groupedCount: 1
             ),
             isHighlighted: true
         )

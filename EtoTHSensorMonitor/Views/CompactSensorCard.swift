@@ -12,20 +12,32 @@ struct CompactSensorCard: View {
                         .font(.caption)
                         .fontWeight(.medium)
                     
-                    if sensorData.rssi < -50 {
-                        Image(systemName: "wifi.slash")
-                            .font(.caption)
-                            .foregroundColor(.red)
+                    if let rssi = sensorData.rssi {
+                        if rssi < -50 {
+                            Image(systemName: "wifi.slash")
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        } else {
+                            Image(systemName: "wifi")
+                                .font(.caption)
+                                .foregroundColor(.green)
+                        }
                     } else {
-                        Image(systemName: "wifi")
+                        Image(systemName: "network")
                             .font(.caption)
                             .foregroundColor(.green)
                     }
                 }
                 
-                Text("\(sensorData.rssi) dBm")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                if let rssi = sensorData.rssi {
+                    Text("\(rssi) dBm")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                } else {
+                    Text("TCP")
+                        .font(.caption2)
+                        .foregroundColor(.green)
+                }
             }
             
             Spacer()
@@ -80,11 +92,12 @@ struct CompactSensorCard: View {
 
 #Preview {
     VStack(spacing: 8) {
+        // BLEデバイスの例
         CompactSensorCard(
             sensorData: SensorData(
                 deviceAddress: "AA:BB:CC:DD:EE:FF",
                 deviceName: "ESP32-Sensor",
-                rssi: -45,
+                rssi: -45,  // BLEデバイスはRSSIあり
                 deviceId: 1,
                 readingId: 123,
                 temperatureCelsius: 23.5,
@@ -94,11 +107,12 @@ struct CompactSensorCard: View {
             )
         )
         
+        // TCPデバイスの例
         CompactSensorCard(
             sensorData: SensorData(
-                deviceAddress: "FF:EE:DD:CC:BB:AA",
-                deviceName: "ESP32-Sensor-2",
-                rssi: -70,
+                deviceAddress: "TCP_2",
+                deviceName: "TCP Sensor 2",
+                rssi: nil,  // TCPデバイスはRSSIなし
                 deviceId: 2,
                 readingId: 456,
                 temperatureCelsius: 25.1,

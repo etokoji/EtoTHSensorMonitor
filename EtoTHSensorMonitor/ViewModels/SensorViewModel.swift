@@ -157,7 +157,7 @@ class SensorViewModel: ObservableObject {
                 timestamp: firstReading.timestamp, // 最初の受信時刻を保持
                 deviceAddress: firstReading.deviceAddress,
                 deviceName: firstReading.deviceName,
-                rssi: firstReading.rssi,
+                rssi: firstReading.rssi,  // BLEまTCPの判定はdeviceAddressで判定
                 deviceId: firstReading.deviceId,
                 readingId: firstReading.readingId,
                 temperatureCelsius: firstReading.temperatureCelsius,

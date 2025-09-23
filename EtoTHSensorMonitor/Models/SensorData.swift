@@ -5,7 +5,7 @@ struct SensorData: Identifiable, Codable {
     let timestamp: Date
     let deviceAddress: String
     let deviceName: String?
-    let rssi: Int
+    let rssi: Int?
     let deviceId: UInt8
     let readingId: UInt16
     let temperatureCelsius: Double
@@ -24,7 +24,7 @@ struct SensorData: Identifiable, Codable {
     init(timestamp: Date = Date(),
          deviceAddress: String,
          deviceName: String?,
-         rssi: Int,
+         rssi: Int?,
          deviceId: UInt8,
          readingId: UInt16,
          temperatureCelsius: Double,

@@ -10,7 +10,7 @@ struct TCPSensorData: Codable {
     let temperature_C: Double
     
     // Convert TCP sensor data to unified SensorData
-    func toSensorData(deviceAddress: String = "TCP", deviceName: String? = nil, rssi: Int = -50) -> SensorData {
+    func toSensorData(deviceAddress: String = "TCP", deviceName: String? = nil, rssi: Int? = nil) -> SensorData {
         // Check if timestamp seems reasonable (should be after 2020)
         let minimumValidTimestamp: TimeInterval = 1577836800 // January 1, 2020
         let currentTime = Date().timeIntervalSince1970

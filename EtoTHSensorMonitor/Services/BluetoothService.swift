@@ -142,7 +142,7 @@ extension BluetoothService: CBCentralManagerDelegate {
             let sensorData = SensorData(
                 deviceAddress: deviceAddress,
                 deviceName: deviceName,
-                rssi: RSSI.intValue,
+                rssi: RSSI.intValue,  // BLE接続なので実際のRSSI値を使用
                 deviceId: decoded.deviceId,
                 readingId: decoded.readingId,
                 temperatureCelsius: decoded.temperature,
