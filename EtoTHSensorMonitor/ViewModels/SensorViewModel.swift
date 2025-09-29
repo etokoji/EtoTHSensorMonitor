@@ -15,6 +15,7 @@ class SensorViewModel: ObservableObject {
     @Published var bluetoothState: CBManagerState = .unknown
     @Published var selectedDeviceId: UInt8? = nil
     @Published var errorMessage: String?
+    @Published var showBluetoothUnauthorizedAlert = false
     
     // TCP関連のプロパティ
     @Published var isTCPConnected = false
@@ -62,6 +63,12 @@ class SensorViewModel: ObservableObject {
                     self?.shouldStartScanningWhenReady = false
                     self?.dataService.startBluetoothScanning()
                     self?.errorMessage = nil
+                }
+                
+                // Bluetoothアクセスが拒否された場合のアラート表示
+                if state == .unauthorized && previousState != .unauthorized {
+                    print("⚠️ Bluetooth access denied - showing alert")
+                    self?.showBluetoothUnauthorizedAlert = true
                 }
             }
             .store(in: &cancellables)
@@ -251,6 +258,10 @@ class SensorViewModel: ObservableObject {
     
     func toggleTCPConnection() {
         dataService.toggleTCPConnection()
+    }
+    
+    func reconnectTCP() {
+        dataService.reconnectTCP()
     }
     
     func clearReadings() {

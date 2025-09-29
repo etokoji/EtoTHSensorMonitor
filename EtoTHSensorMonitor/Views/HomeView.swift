@@ -8,6 +8,11 @@ struct HomeView: View {
         UIDevice.current.userInterfaceIdiom == .pad
     }
     
+    // Mac上のiPadエミュレーションも含めて大画面と判定
+    private var isLargeScreen: Bool {
+        isIPad || UIScreen.main.bounds.width > 600
+    }
+    
     private var latestSensorData: SensorData? {
         // 履歴データから最新を取得（重複も含む）
         if let latest = viewModel.sensorReadings.first {
@@ -26,11 +31,11 @@ struct HomeView: View {
         )
         .ignoresSafeArea()
         .overlay(
-            VStack(spacing: isLandscape && !isIPad ? 20 : 40) {
-                // Header - smaller in landscape
-                VStack(spacing: isLandscape && !isIPad ? 5 : 10) {
+            VStack(spacing: isLargeScreen ? 30 : (isLandscape ? 20 : 40)) {
+                // Header - 大画面ではコンパクトに
+                VStack(spacing: isLargeScreen ? 8 : (isLandscape ? 5 : 10)) {
                     Text("温度センサー表示")
-                        .font(isLandscape && !isIPad ? .title : .largeTitle)
+                        .font(isLargeScreen ? .title : (isLandscape ? .title : .largeTitle))
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
                     
@@ -39,27 +44,28 @@ struct HomeView: View {
                     
                     if let data = latestSensorData {
                         Text("最終更新: \(formattedTimestamp(data.timestamp))")
-                            .font(isLandscape && !isIPad ? .caption : .subheadline)
+                            .font(isLargeScreen ? .footnote : (isLandscape ? .caption : .subheadline))
                             .foregroundColor(.secondary)
                     } else {
                         Text("データ待機中...")
-                            .font(isLandscape && !isIPad ? .caption : .subheadline)
+                            .font(isLargeScreen ? .footnote : (isLandscape ? .caption : .subheadline))
                             .foregroundColor(.secondary)
                     }
                 }
                 
                 if let data = latestSensorData {
                     // Main sensor data display - adaptive layout
-                    if isLandscape || isIPad {
-                        // Landscape or iPad: 2x2 grid
-                        VStack(spacing: isIPad ? 30 : (isLandscape ? 10 : 20)) {
-                            HStack(spacing: isIPad ? 30 : (isLandscape ? 12 : 20)) {
+                    if isLandscape || isLargeScreen {
+                        // Landscape or large screen: 2x2 grid with maximum width
+                        VStack(spacing: isLargeScreen ? 25 : (isLandscape ? 10 : 20)) {
+                            HStack(spacing: isLargeScreen ? 25 : (isLandscape ? 12 : 20)) {
                                 SensorCard(
                                     title: "温度",
                                     value: data.formattedTemperature,
                                     icon: "thermometer",
                                     color: .red,
-                                    isCompact: !isIPad
+                                    isCompact: false,
+                                    isLargeScreen: isLargeScreen
                                 )
                                 
                                 SensorCard(
@@ -67,17 +73,19 @@ struct HomeView: View {
                                     value: data.formattedHumidity,
                                     icon: "humidity",
                                     color: .blue,
-                                    isCompact: !isIPad
+                                    isCompact: false,
+                                    isLargeScreen: isLargeScreen
                                 )
                             }
                             
-                            HStack(spacing: isIPad ? 30 : (isLandscape ? 12 : 20)) {
+                            HStack(spacing: isLargeScreen ? 25 : (isLandscape ? 12 : 20)) {
                                 SensorCard(
                                     title: "気圧",
                                     value: data.formattedPressure,
                                     icon: "barometer",
                                     color: .orange,
-                                    isCompact: !isIPad
+                                    isCompact: false,
+                                    isLargeScreen: isLargeScreen
                                 )
                                 
                                 SensorCard(
@@ -85,10 +93,12 @@ struct HomeView: View {
                                     value: data.formattedVoltage,
                                     icon: "battery.100",
                                     color: .green,
-                                    isCompact: !isIPad
+                                    isCompact: false,
+                                    isLargeScreen: isLargeScreen
                                 )
                             }
                         }
+                        .frame(maxWidth: isLargeScreen ? 600 : .infinity) // 大画面では最大幅を制限
                     } else {
                         // Portrait: vertical stack
                         VStack(spacing: 30) {
@@ -140,14 +150,14 @@ struct HomeView: View {
                     .padding(.top, 50)
                 }
                 
-                if !isLandscape {
+                if !isLandscape && !isLargeScreen {
                     Spacer()
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.top, isLandscape && !isIPad ? 10 : 20)
-            .padding(.vertical, isLandscape && !isIPad ? 0 : 20)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: isLandscape ? .center : .top)
+            .padding(.horizontal, isLargeScreen ? 40 : 20) // 大画面では大きなマージン
+            .padding(.top, isLargeScreen ? 30 : (isLandscape ? 10 : 20))
+            .padding(.vertical, isLargeScreen ? 30 : (isLandscape ? 0 : 20))
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: (isLandscape || isLargeScreen) ? .center : .top)
         )
         .navigationTitle("ホーム")
         .navigationBarTitleDisplayMode(.inline)
@@ -166,6 +176,16 @@ struct HomeView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
             updateOrientation()
+        }
+        .alert("Bluetoothアクセスが拒否されました", isPresented: $viewModel.showBluetoothUnauthorizedAlert) {
+            Button("設定を開く") {
+                if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(settingsUrl)
+                }
+            }
+            Button("キャンセル", role: .cancel) { }
+        } message: {
+            Text("このアプリがセンサーデータを受信するためには、Bluetoothアクセスを許可してください。\n\n設定 > アプリ > 温度センサー表示 > Bluetooth で設定できます。")
         }
     }
     
@@ -191,6 +211,7 @@ struct SensorCard: View {
     let icon: String
     let color: Color
     var isCompact: Bool = false
+    var isLargeScreen: Bool = false
     
     var body: some View {
         if isCompact {
@@ -228,7 +249,7 @@ struct SensorCard: View {
                     .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
             )
         } else {
-            // Full layout for portrait view
+            // Full layout for portrait view and large screens
             HStack(spacing: 20) {
                 // Icon
                 Image(systemName: icon)
@@ -245,13 +266,17 @@ struct SensorCard: View {
                         .foregroundColor(.secondary)
                     
                     Text(value)
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .font(.system(size: isLargeScreen ? 28 : 36, weight: .bold, design: .rounded)) // 大画面ではフォントサイズを小さく
                         .foregroundColor(.primary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6) // Macでの表示を改善するために縮小率を上げる
+                        .allowsTightening(true) // 文字間隔の締めを許可
                 }
                 
                 Spacer()
             }
-            .padding(.horizontal, 20)
+            .frame(maxWidth: .infinity, minHeight: 80) // 最大幅と最小高さを設定
+            .padding(.horizontal, 15) // 水平パディングを減らしてテキストスペースを確保
             .padding(.vertical, 15)
             .background(
                 RoundedRectangle(cornerRadius: 15)

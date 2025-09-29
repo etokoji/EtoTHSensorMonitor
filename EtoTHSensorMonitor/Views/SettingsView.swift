@@ -4,13 +4,91 @@ struct SettingsView: View {
     @StateObject private var settings = SettingsManager.shared
     @ObservedObject var viewModel: SensorViewModel
     @Environment(\.dismiss) private var dismiss
+    @State private var isEditingIPAddress = false
+    @State private var tempIPAddress = ""
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("接続設定")) {
                     // TCP接続の有効/無効
                     Toggle("TCPサーバ接続", isOn: $viewModel.tcpEnabled)
+                    
+                    // TCPサーバIPアドレス設定
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("TCPサーバIPアドレス")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        if isEditingIPAddress {
+                            // 編集モード
+                            HStack {
+                                TextField("192.168.1.89", text: $tempIPAddress)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .keyboardType(.numbersAndPunctuation)
+                                    .autocorrectionDisabled(true)
+                                
+                                if isValidIPAddress(tempIPAddress) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                        .font(.caption)
+                                } else if !tempIPAddress.isEmpty {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .foregroundColor(.orange)
+                                        .font(.caption)
+                                }
+                            }
+                            
+                            HStack {
+                                Button("接続") {
+                                    // IPアドレスを保存して接続
+                                    settings.serverIPAddress = tempIPAddress
+                                    isEditingIPAddress = false
+                                    
+                                    // TCP接続を再試行
+                                    if viewModel.tcpEnabled {
+                                        viewModel.reconnectTCP()
+                                    }
+                                }
+                                .buttonStyle(BorderedProminentButtonStyle())
+                                .disabled(!isValidIPAddress(tempIPAddress))
+                                
+                                Button("キャンセル") {
+                                    tempIPAddress = settings.serverIPAddress
+                                    isEditingIPAddress = false
+                                }
+                                .buttonStyle(BorderedButtonStyle())
+                            }
+                        } else {
+                            // 表示モード
+                            HStack {
+                                Text(settings.serverIPAddress.isEmpty ? "未設定" : settings.serverIPAddress)
+                                    .foregroundColor(settings.serverIPAddress.isEmpty ? .secondary : .primary)
+                                
+                                Spacer()
+                                
+                                if isValidIPAddress(settings.serverIPAddress) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                        .font(.caption)
+                                } else if !settings.serverIPAddress.isEmpty {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .foregroundColor(.orange)
+                                        .font(.caption)
+                                }
+                                
+                                Button("変更") {
+                                    tempIPAddress = settings.serverIPAddress
+                                    isEditingIPAddress = true
+                                }
+                                .buttonStyle(BorderedButtonStyle())
+                            }
+                        }
+                        
+                        Text("ポート番号は8080で固定です")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
                     
                     // WiFi設定画面へのナビゲーション
                     NavigationLink(destination: WiFiSettingsView(compositeDataService: viewModel.dataService)) {
@@ -36,15 +114,13 @@ struct SettingsView: View {
                             )
                     }
                     
+                    // TCP接続状態表示
                     if viewModel.tcpEnabled {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("サーバ情報")
+                            Text("TCP接続状態")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                            Text("\(settings.serverIPAddress):8080")
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                            Text("接続状態: \(viewModel.tcpConnectionState)")
+                            Text("\(viewModel.tcpConnectionState)")
                                 .font(.footnote)
                                 .foregroundColor(
                                     viewModel.isTCPConnected ? .green : .orange
@@ -171,6 +247,16 @@ struct SettingsView: View {
                 }
             }
         }
+        .alert("Bluetoothアクセスが拒否されました", isPresented: $viewModel.showBluetoothUnauthorizedAlert) {
+            Button("設定を開く") {
+                if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(settingsUrl)
+                }
+            }
+            Button("キャンセル", role: .cancel) { }
+        } message: {
+            Text("このアプリがセンサーデータを受信するためには、Bluetoothアクセスを許可してください。\n\n設定 > アプリ > 温度センサー表示 > Bluetooth で設定できます。")
+        }
     }
     
     private var voltageFooterText: String {
@@ -189,6 +275,19 @@ struct SettingsView: View {
         } else {
             return "\(minutes / 60)時間"
         }
+    }
+    
+    private func isValidIPAddress(_ ip: String) -> Bool {
+        let components = ip.components(separatedBy: ".")
+        guard components.count == 4 else { return false }
+        
+        for component in components {
+            guard let number = Int(component),
+                  number >= 0 && number <= 255 else {
+                return false
+            }
+        }
+        return true
     }
 }
 

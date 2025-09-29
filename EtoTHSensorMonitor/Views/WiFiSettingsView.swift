@@ -40,7 +40,7 @@ struct WiFiSettingsView: View {
             wifiConfigService.disconnect()
             
             // 本来のTCPサーバへの接続を再開
-            compositeDataService.forceReconnectTCP()
+            compositeDataService.reconnectTCP()
         }
     }
 
@@ -177,7 +177,7 @@ struct WiFiSettingsView: View {
         selectedDevice = nil
         
         // 本来のTCPサーバへの接続を再開
-        compositeDataService.forceReconnectTCP()
+        compositeDataService.reconnectTCP()
         
         // 少し待ってからスキャンを再開始（必要な場合）
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

@@ -7,7 +7,7 @@ struct ContentView: View {
     
     var body: some View {
         TabView {
-            NavigationView {
+            NavigationStack {
                 ZStack {
                     HomeView(viewModel: sharedViewModel)
                     
@@ -134,7 +134,7 @@ struct HistoryView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 VStack(spacing: 12) {
                     // Status header
@@ -195,6 +195,16 @@ struct HistoryView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
             updateOrientation()
+        }
+        .alert("Bluetoothアクセスが拒否されました", isPresented: $viewModel.showBluetoothUnauthorizedAlert) {
+            Button("設定を開く") {
+                if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(settingsUrl)
+                }
+            }
+            Button("キャンセル", role: .cancel) { }
+        } message: {
+            Text("このアプリがセンサーデータを受信するためには、Bluetoothアクセスを許可してください。\n\n設定 > アプリ > 温度センサー表示 > Bluetooth で設定できます。")
         }
     }
     

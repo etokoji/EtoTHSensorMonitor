@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import CoreBluetooth
 import Combine
 
@@ -14,22 +15,53 @@ class BluetoothService: NSObject, ObservableObject {
     let dataReceivedPublisher = PassthroughSubject<Void, Never>()
     let allDataPublisher = PassthroughSubject<SensorData, Never>()
     
+    private var bluetoothStateString: String {
+        switch centralManager.state {
+        case .unknown: return "Unknown"
+        case .resetting: return "Resetting"
+        case .unsupported: return "Unsupported"
+        case .unauthorized: return "Unauthorized"
+        case .poweredOff: return "Powered Off"
+        case .poweredOn: return "Powered On"
+        @unknown default: return "Unknown State"
+        }
+    }
+    
     override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
     }
     
     func startScanning() {
+        print("📱 iPad/iOS Bluetooth Debug - Starting scan...")
+        print("📱 Device: \(UIDevice.current.model)")
+        print("📱 iOS Version: \(UIDevice.current.systemVersion)")
+        print("📱 BT State: \(centralManager.state.rawValue) (\(bluetoothStateString))")
+        
         guard centralManager.state == .poweredOn else {
-            print("Bluetooth is not powered on")
+            print("⚠️ Bluetooth is not powered on - State: \(bluetoothStateString)")
             return
         }
         
         isScanning = true
-        centralManager.scanForPeripherals(withServices: nil, options: [
-            CBCentralManagerScanOptionAllowDuplicatesKey: true
-        ])
-        print("Started scanning for peripherals")
+        
+        // iPad対応: より積極的なスキャンオプションを使用
+        let scanOptions: [String: Any] = [
+            CBCentralManagerScanOptionAllowDuplicatesKey: true,
+            CBCentralManagerScanOptionSolicitedServiceUUIDsKey: [] // iPadでより多くのデバイスを検出
+        ]
+        
+        centralManager.scanForPeripherals(withServices: nil, options: scanOptions)
+        print("✅ Started scanning for peripherals with enhanced iPad options")
+        
+        // iPad用デバッグ: 10秒後にスキャン状態をチェック
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+            if self.isScanning {
+                print("📝 10s scan check - Found devices: \(self.discoveredDevices.count)")
+                print("📝 BT State: \(self.centralManager.state.rawValue)")
+                print("📝 Is Scanning: \(self.centralManager.isScanning)")
+            }
+        }
     }
     
     func stopScanning() {
@@ -110,6 +142,10 @@ extension BluetoothService: CBCentralManagerDelegate {
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         
+        let deviceModel = UIDevice.current.model
+        let peripheralName = peripheral.name ?? ""
+        let advertisementLocalName = advertisementData[CBAdvertisementDataLocalNameKey] as? String
+        
         // Check manufacturer data first
         var payloads: [Data] = []
         if let manufacturerData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data {
@@ -119,6 +155,15 @@ extension BluetoothService: CBCentralManagerDelegate {
         // Check service data if no manufacturer data
         if payloads.isEmpty, let serviceData = advertisementData[CBAdvertisementDataServiceDataKey] as? [CBUUID: Data] {
             payloads.append(contentsOf: serviceData.values)
+        }
+        
+        // デバイス名の違いをデバッグするためのログ出力
+        if !peripheralName.isEmpty || advertisementLocalName != nil {
+            print("[センサー] BLEデバイス発見 (\(deviceModel)):")
+            print("  - peripheral.name: '\(peripheralName)'")
+            print("  - advertisementData localName: '\(advertisementLocalName ?? "nil")'")
+            print("  - peripheral.identifier: \(peripheral.identifier)")
+            print("  - RSSI: \(RSSI.intValue)")
         }
         
         for payload in payloads {

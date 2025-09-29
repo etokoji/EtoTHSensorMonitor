@@ -251,6 +251,24 @@ class CompositeDataService: ObservableObject {
         }
     }
     
+    /// TCP接続を直接再試行する（トグルを使わずに直接呼び出す）
+    func reconnectTCP() {
+        print("🌐 Direct TCP reconnection requested")
+        
+        guard tcpEnabled else {
+            print("🌐 TCP is disabled, cannot reconnect")
+            return
+        }
+        
+        // 直接TCPサービスの再接続を呼び出す
+        tcpService.stopConnection()
+        
+        // 少し遅延してから再接続
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.tcpService.startConnection()
+        }
+    }
+    
     // MARK: - Computed Properties
     
     var hasReadings: Bool {

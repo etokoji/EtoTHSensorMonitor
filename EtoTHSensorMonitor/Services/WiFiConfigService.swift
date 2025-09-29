@@ -1,6 +1,7 @@
 import Foundation
 import CoreBluetooth
 import Combine
+import UIKit
 
 @MainActor
 class WiFiConfigService: NSObject, ObservableObject {
@@ -226,19 +227,53 @@ extension WiFiConfigService: @preconcurrency CBCentralManagerDelegate {
 
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
         let deviceName = peripheral.name ?? ""
-        guard !deviceName.isEmpty else { return }
+        let deviceModel = UIDevice.current.model
+        let advertisementLocalName = advertisementData[CBAdvertisementDataLocalNameKey] as? String
         
-        // ESP32を含むデバイスのみをフィルタリング
-        guard deviceName.contains("ESP32") else {
-            print("[WiFiSetup] ESP32以外のデバイスをスキップ: \(deviceName)")
+        // デバッグ情報を詳細にログ出力
+        print("[WiFiSetup] BLEデバイス発見 (\(deviceModel)):")
+        print("  - peripheral.name: '\(deviceName)'")
+        print("  - advertisementData localName: '\(advertisementLocalName ?? "nil")'")
+        print("  - peripheral.identifier: \(peripheral.identifier)")
+        print("  - RSSI: \(RSSI.intValue)")
+        
+        guard !deviceName.isEmpty else {
+            print("[WiFiSetup] デバイス名が空のためスキップ")
             return
         }
         
-        print("[WiFiSetup] ESP32デバイス発見: \(deviceName) RSSI: \(RSSI.intValue)")
+        // WiFiSetupまたはESP32を含むデバイスのみをフィルタリング
+        // peripheral.nameとadvertisementData localNameの両方をチェック
+        let nameContainsWiFiSetup = deviceName.contains("WiFiSetup")
+        let nameContainsESP32 = deviceName.contains("ESP32")
+        let localNameContainsWiFiSetup = advertisementLocalName?.contains("WiFiSetup") ?? false
+        let localNameContainsESP32 = advertisementLocalName?.contains("ESP32") ?? false
+        
+        let isTargetDevice = nameContainsWiFiSetup || nameContainsESP32 || localNameContainsWiFiSetup || localNameContainsESP32
+        
+        print("[WiFiSetup] フィルタリングチェック (\(deviceModel)):")
+        print("  - peripheral.name: WiFiSetup=\(nameContainsWiFiSetup), ESP32=\(nameContainsESP32)")
+        print("  - localName: WiFiSetup=\(localNameContainsWiFiSetup), ESP32=\(localNameContainsESP32)")
+        print("  - 対象デバイス: \(isTargetDevice)")
+        
+        guard isTargetDevice else {
+            print("[WiFiSetup] 対象外のデバイスをスキップ: '\(deviceName)' (localName: '\(advertisementLocalName ?? "nil")') on \(deviceModel)")
+            return
+        }
+        
+        print("[WiFiSetup] ✅ WiFi設定対象デバイス発見: '\(deviceName)' on \(deviceModel) RSSI: \(RSSI.intValue)")
 
         Task { @MainActor in
             if !discoveredDevices.contains(where: { $0.id == peripheral.identifier }) {
-                let device = WiFiConfigDevice(id: peripheral.identifier, name: deviceName, rssi: RSSI.intValue, peripheral: peripheral)
+                // デバイス表示名を決定 - peripheral.nameとlocalNameが異なる場合は両方表示
+                let displayName: String
+                if let localName = advertisementLocalName, localName != deviceName && !localName.isEmpty {
+                    displayName = "\(deviceName) (\(localName))"
+                } else {
+                    displayName = deviceName
+                }
+                
+                let device = WiFiConfigDevice(id: peripheral.identifier, name: displayName, rssi: RSSI.intValue, peripheral: peripheral)
                 discoveredDevices.append(device)
             }
         }
