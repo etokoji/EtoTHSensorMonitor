@@ -16,6 +16,10 @@ class SensorViewModel: ObservableObject {
     @Published var selectedDeviceId: UInt8? = nil
     @Published var errorMessage: String?
     
+    // 過去ログ（ファイルから読み込んだ過去セッションのデータ）
+    @Published var pastLogReadings: [SensorData] = []
+    @Published var isPastLogLoaded = false
+    
     // ハイライト管理用
     @Published var highlightedReadingIds: Set<UUID> = []
     @Published var showDataReceivedIndicator = false
@@ -32,6 +36,7 @@ class SensorViewModel: ObservableObject {
     init(dataService: CompositeDataService = CompositeDataService()) {
         self.dataService = dataService
         setupBindings()
+        loadPastLogs()
     }
     
     private func setupBindings() {
@@ -162,6 +167,9 @@ class SensorViewModel: ObservableObject {
             // 削除されたアイテムのハイライトもクリア
             highlightedReadingIds.remove(removedReading.id)
         }
+        
+        // ファイルにデータを保存
+        ReadingLogManager.shared.append(reading)
     }
     
     // MARK: - Public Methods
@@ -194,6 +202,18 @@ class SensorViewModel: ObservableObject {
     func clearReadings() {
         sensorReadings.removeAll()
         highlightedReadingIds.removeAll()
+    }
+    
+    /// 過去ログを非同期でファイルから読み込む
+    func loadPastLogs() {
+        DispatchQueue.global(qos: .background).async {
+            let readings = ReadingLogManager.shared.loadPastReadings(maxDays: 7)
+            DispatchQueue.main.async {
+                self.pastLogReadings = readings
+                self.isPastLogLoaded = true
+                print("📝 Loaded \(readings.count) past log entries")
+            }
+        }
     }
     
     func filterByDevice(_ deviceId: UInt8?) {
