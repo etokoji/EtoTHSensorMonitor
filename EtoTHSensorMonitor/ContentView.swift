@@ -129,7 +129,7 @@ struct ContentView: View {
 struct HistoryView: View {
     @ObservedObject var viewModel: SensorViewModel
     @State private var isLandscape = false
-    @State private var showPastLogs = false
+    @State private var expandedDate: Date? = nil
     
     private var isIPad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
@@ -171,26 +171,19 @@ struct HistoryView: View {
                                 .padding(.top, 8)
                                 .padding(.bottom, 4)
                             
-                            if showPastLogs {
-                                if viewModel.pastLogReadings.isEmpty {
-                                    Text("過去ログなし")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                        .padding()
-                                } else {
-                                    LazyVStack(spacing: isLandscape ? 3 : 6) {
-                                        ForEach(viewModel.pastLogReadings) { reading in
-                                            SensorReadingView(
-                                                sensorData: reading,
-                                                isHighlighted: false,
-                                                isLandscapeCompact: isLandscape || isIPad
-                                            )
-                                            .opacity(0.75)
-                                            .padding(.horizontal, 8)
-                                        }
+                            if viewModel.availableLogDates.isEmpty {
+                                Text("ログファイルなし")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .padding()
+                            } else {
+                                LazyVStack(spacing: 4) {
+                                    ForEach(viewModel.availableLogDates, id: \.self) { date in
+                                        dateSection(for: date)
                                     }
-                                    .padding(.vertical, 4)
                                 }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
                             }
                         }
                         .padding(.bottom, 8)
@@ -269,25 +262,15 @@ struct HistoryView: View {
     // 過去ログセクションヘッダー
     private var pastLogSectionHeader: some View {
         HStack {
-            Label("過去ログ（7日分）", systemImage: "clock.arrow.circlepath")
+            Label("過去ログ", systemImage: "clock.arrow.circlepath")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            if !viewModel.pastLogReadings.isEmpty && viewModel.isPastLogLoaded {
-                Text("(\(viewModel.pastLogReadings.count)件)")
+            if !viewModel.availableLogDates.isEmpty {
+                Text("(\(viewModel.availableLogDates.count)日分)")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
             Spacer()
-            if !viewModel.isPastLogLoaded {
-                ProgressView()
-                    .scaleEffect(0.7)
-            } else {
-                Button(action: { withAnimation { showPastLogs.toggle() } }) {
-                    Text(showPastLogs ? "閉じる" : "表示")
-                        .font(.caption)
-                        .foregroundColor(.blue)
-                }
-            }
         }
         .padding(.horizontal, 4)
         .padding(.vertical, 6)
@@ -295,6 +278,90 @@ struct HistoryView: View {
             RoundedRectangle(cornerRadius: 8)
                 .fill(Color(.systemGray6))
         )
+    }
+
+    // 日付ごとの折りたたみセクション
+    @ViewBuilder
+    private func dateSection(for date: Date) -> some View {
+        VStack(spacing: 4) {
+            // 日付行（タップで展開/折りたたみ）
+            Button(action: { toggleDate(date) }) {
+                HStack {
+                    Image(systemName: "calendar")
+                        .foregroundColor(.blue)
+                        .font(.caption)
+                    Text(formattedLogDate(date))
+                        .font(.caption)
+                        .foregroundColor(.primary)
+                    Spacer()
+                    if viewModel.isLoadingDate && isSameDay(viewModel.loadedDate, date) {
+                        ProgressView().scaleEffect(0.7)
+                    } else {
+                        Image(systemName: expandedDate.map { isSameDay($0, date) } == true
+                              ? "chevron.up" : "chevron.down")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color(.systemGray5))
+                )
+            }
+            .buttonStyle(.plain)
+
+            // 展開時のデータ一覧
+            if expandedDate.map({ isSameDay($0, date) }) == true
+                && !viewModel.isLoadingDate {
+                if viewModel.selectedDateReadings.isEmpty {
+                    Text("データなし")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.vertical, 4)
+                } else {
+                    LazyVStack(spacing: isLandscape ? 3 : 6) {
+                        ForEach(viewModel.selectedDateReadings) { reading in
+                            SensorReadingView(
+                                sensorData: reading,
+                                isHighlighted: false,
+                                isLandscapeCompact: isLandscape || isIPad
+                            )
+                            .opacity(0.8)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+        }
+    }
+
+    private func toggleDate(_ date: Date) {
+        if let current = expandedDate, isSameDay(current, date) {
+            expandedDate = nil
+        } else {
+            expandedDate = date
+            viewModel.loadReadings(for: date)
+        }
+    }
+
+    private func isSameDay(_ a: Date?, _ b: Date) -> Bool {
+        guard let a else { return false }
+        return Calendar.current.isDate(a, inSameDayAs: b)
+    }
+
+    private func formattedLogDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        formatter.locale = Locale(identifier: "ja_JP")
+        let today = Calendar.current.isDateInToday(date)
+        let yesterday = Calendar.current.isDateInYesterday(date)
+        let base = formatter.string(from: date)
+        if today { return base + "（本日）" }
+        if yesterday { return base + "（昨日）" }
+        return base
     }
     
     private var emptyStateView: some View {

@@ -16,9 +16,11 @@ class SensorViewModel: ObservableObject {
     @Published var selectedDeviceId: UInt8? = nil
     @Published var errorMessage: String?
     
-    // 過去ログ（ファイルから読み込んだ過去セッションのデータ）
-    @Published var pastLogReadings: [SensorData] = []
-    @Published var isPastLogLoaded = false
+    // 過去ログ関連
+    @Published var availableLogDates: [Date] = []
+    @Published var selectedDateReadings: [SensorData] = []
+    @Published var isLoadingDate: Bool = false
+    @Published var loadedDate: Date? = nil
     
     // ハイライト管理用
     @Published var highlightedReadingIds: Set<UUID> = []
@@ -35,16 +37,8 @@ class SensorViewModel: ObservableObject {
     
     init(dataService: CompositeDataService = CompositeDataService()) {
         self.dataService = dataService
-        
-        // BLE受信開始前に当日ログを同期読み込み
-        let todayReadings = ReadingLogManager.shared.loadTodayReadings()
-        if !todayReadings.isEmpty {
-            self.sensorReadings = Array(todayReadings.prefix(Constants.maxStoredReadings))
-            print("📝 Restored \(self.sensorReadings.count) readings from today's log")
-        }
-        
-        setupBindings()  // ここからBLE購読開始
-        loadPastLogs()
+        setupBindings()
+        loadAvailableDates()
     }
     
     private func setupBindings() {
@@ -215,14 +209,28 @@ class SensorViewModel: ObservableObject {
         highlightedReadingIds.removeAll()
     }
     
-    /// 過去ログを非同期でファイルから読み込む
-    func loadPastLogs() {
+    /// 利用可能なログ日付一覧を非同期で取得
+    func loadAvailableDates() {
         DispatchQueue.global(qos: .background).async {
-            let readings = ReadingLogManager.shared.loadPastReadings(maxDays: 7)
+            let dates = ReadingLogManager.shared.availableLogDates()
             DispatchQueue.main.async {
-                self.pastLogReadings = readings
-                self.isPastLogLoaded = true
-                print("📝 Loaded \(readings.count) past log entries")
+                self.availableLogDates = dates
+                print("📝 Found \(dates.count) log files")
+            }
+        }
+    }
+
+    /// 指定した日付のログを非同期で読み込む
+    func loadReadings(for date: Date) {
+        isLoadingDate = true
+        loadedDate = date
+        selectedDateReadings = []
+        DispatchQueue.global(qos: .background).async {
+            let readings = ReadingLogManager.shared.loadDayReadings(for: date)
+            DispatchQueue.main.async {
+                self.selectedDateReadings = readings
+                self.isLoadingDate = false
+                print("📝 Loaded \(readings.count) readings for \(date)")
             }
         }
     }

@@ -44,23 +44,25 @@ class ReadingLogManager {
 
     // MARK: - 読み込み
 
-    /// 当日のログファイルから既存データを読み込む（アプリ再起動時の復元用）
-    func loadTodayReadings() -> [SensorData] {
-        let url = logFileURL(for: Date())
+    /// 指定した1日分のデータを読み込む
+    func loadDayReadings(for date: Date) -> [SensorData] {
+        let url = logFileURL(for: date)
         guard fileManager.fileExists(atPath: url.path) else { return [] }
-        let readings = loadReadings(from: url)
-        // 新しい順に並び替え
-        return readings.sorted { $0.timestamp > $1.timestamp }
+        return loadReadings(from: url).sorted { $0.timestamp > $1.timestamp }
     }
 
-    /// 指定日数分の過去ログを読み込む（本日を除く）
-    func loadPastReadings(maxDays: Int = 7) -> [SensorData] {
+    /// 指定日数分のログを読み込む
+    /// - Parameters:
+    ///   - maxDays: 読み込む日数（本日を含む場合は当日もカウント）
+    ///   - includeToday: true の場合は本日のファイルも含める
+    func loadPastReadings(maxDays: Int = 7, includeToday: Bool = false) -> [SensorData] {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
+        let startOffset = includeToday ? 0 : 1
 
         var results: [SensorData] = []
 
-        for dayOffset in 1...maxDays {
+        for dayOffset in startOffset...maxDays {
             guard let date = calendar.date(byAdding: .day, value: -dayOffset, to: today) else { continue }
             let url = logFileURL(for: date)
             guard fileManager.fileExists(atPath: url.path) else { continue }
