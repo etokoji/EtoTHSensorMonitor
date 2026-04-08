@@ -170,6 +170,9 @@ class SensorViewModel: ObservableObject {
         
         // ファイルにデータを保存
         ReadingLogManager.shared.append(reading)
+        
+        // Widget用共有コンテナに書き込む
+        SharedDataManager.shared.writeLatestReading(reading)
     }
     
     // MARK: - Public Methods
