@@ -1,4 +1,5 @@
 import Foundation
+import CoreBluetooth
 
 struct Constants {
     // ESP32 ENV payload constants
@@ -24,6 +25,8 @@ struct Constants {
     // Bluetooth scanning
     static let scanTimeout: TimeInterval = 0.3
     static let scanInterval: TimeInterval = 0.1
+    /// ESP32が送信するService UUID（バックグラウンドスキャン用）
+    static let envServiceUUID = CBUUID(string: "FFAB")
     
     // UI Constants
     static let maxStoredReadings = 100

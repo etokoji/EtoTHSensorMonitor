@@ -38,7 +38,7 @@ class BluetoothService: NSObject, ObservableObject {
         }
         
         isScanning = true
-        centralManager.scanForPeripherals(withServices: nil, options: [
+        centralManager.scanForPeripherals(withServices: [Constants.envServiceUUID], options: [
             CBCentralManagerScanOptionAllowDuplicatesKey: true
         ])
         print("📶 Started scanning for peripherals (background: \(isInBackground))")
@@ -74,7 +74,7 @@ class BluetoothService: NSObject, ObservableObject {
             // スキャン中の場合、フォアグラウンド向けに再開（allowDuplicates有効化のため）
             print("📶 Returning to foreground - refreshing BLE scan for full-speed")
             centralManager.stopScan()
-            centralManager.scanForPeripherals(withServices: nil, options: [
+            centralManager.scanForPeripherals(withServices: [Constants.envServiceUUID], options: [
                 CBCentralManagerScanOptionAllowDuplicatesKey: true
             ])
         }
