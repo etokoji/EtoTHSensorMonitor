@@ -36,6 +36,7 @@ class SensorViewModel: ObservableObject {
     init(dataService: CompositeDataService = CompositeDataService()) {
         self.dataService = dataService
         setupBindings()
+        loadTodayHistory()
         loadPastLogs()
     }
     
@@ -207,6 +208,23 @@ class SensorViewModel: ObservableObject {
         highlightedReadingIds.removeAll()
     }
     
+    /// 起動時に当日ファイルから既存データをsensorReadingsに読み込む
+    private func loadTodayHistory() {
+        DispatchQueue.global(qos: .background).async {
+            let readings = ReadingLogManager.shared.loadTodayReadings()
+            guard !readings.isEmpty else { return }
+            // 最大保存件数に制限
+            let limited = Array(readings.prefix(Constants.maxStoredReadings))
+            DispatchQueue.main.async {
+                // 現セッションデータがまだない場合のみ復元（リアルタイムデータを上書きしない）
+                if self.sensorReadings.isEmpty {
+                    self.sensorReadings = limited
+                    print("📝 Restored \(limited.count) readings from today's log")
+                }
+            }
+        }
+    }
+
     /// 過去ログを非同期でファイルから読み込む
     func loadPastLogs() {
         DispatchQueue.global(qos: .background).async {

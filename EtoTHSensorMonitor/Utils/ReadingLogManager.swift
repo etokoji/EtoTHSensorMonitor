@@ -44,6 +44,15 @@ class ReadingLogManager {
 
     // MARK: - 読み込み
 
+    /// 当日のログファイルから既存データを読み込む（アプリ再起動時の復元用）
+    func loadTodayReadings() -> [SensorData] {
+        let url = logFileURL(for: Date())
+        guard fileManager.fileExists(atPath: url.path) else { return [] }
+        let readings = loadReadings(from: url)
+        // 新しい順に並び替え
+        return readings.sorted { $0.timestamp > $1.timestamp }
+    }
+
     /// 指定日数分の過去ログを読み込む（本日を除く）
     func loadPastReadings(maxDays: Int = 7) -> [SensorData] {
         let calendar = Calendar.current
