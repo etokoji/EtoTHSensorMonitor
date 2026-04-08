@@ -22,13 +22,6 @@ struct ConnectionStatusIndicator: View {
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(connectionColor)
             }
-            
-            // TCP接続中の場合は追加の状態表示
-            if viewModel.tcpEnabled && viewModel.isTCPConnected && !isCompact {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
-                    .font(.system(size: 10))
-            }
         }
         .padding(.horizontal, isCompact ? 6 : 8)
         .padding(.vertical, isCompact ? 3 : 4)
@@ -43,25 +36,15 @@ struct ConnectionStatusIndicator: View {
     }
     
     private var connectionIcon: String {
-        if viewModel.tcpEnabled {
-            if viewModel.isTCPConnected {
-                return "wifi"
-            } else {
-                return "wifi.slash"
-            }
-        } else if viewModel.isScanning {
-            return "antenna.radiowaves.left.and.right"  // BLEスキャン中を表すアイコン
+        if viewModel.isScanning {
+            return "antenna.radiowaves.left.and.right"
         } else {
             return "antenna.radiowaves.left.and.right.slash"
         }
     }
     
     private var connectionColor: Color {
-        if viewModel.tcpEnabled && viewModel.isTCPConnected {
-            return .green
-        } else if viewModel.tcpEnabled && !viewModel.isTCPConnected {
-            return .orange
-        } else if viewModel.isScanning {
+        if viewModel.isScanning {
             return .blue
         } else {
             return .gray

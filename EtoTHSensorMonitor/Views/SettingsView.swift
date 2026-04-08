@@ -9,70 +9,16 @@ struct SettingsView: View {
         NavigationView {
             Form {
                 Section(header: Text("接続設定")) {
-                    // TCP接続の有効/無効
-                    Toggle("TCPサーバ接続", isOn: $viewModel.tcpEnabled)
-                    
-                    // WiFi設定画面へのナビゲーション
-                    NavigationLink(destination: WiFiSettingsView(compositeDataService: viewModel.dataService)) {
-                        HStack {
-                            Image(systemName: "wifi")
-                                .foregroundColor(.blue)
-                                .frame(width: 24, height: 24)
-                            Text("WiFi設定")
-                            Spacer()
-                        }
-                    }
-                    
-                    // 接続状態表示
+                    // BLEスキャン状態表示
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("接続状態")
+                        Text("Bluetooth状態")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Text(viewModel.detailedConnectionStatus)
                             .font(.footnote)
                             .foregroundColor(
-                                viewModel.activeConnectionType == "TCP" ? .green :
                                 viewModel.activeConnectionType == "Bluetooth" ? .blue : .secondary
                             )
-                    }
-                    
-                    if viewModel.tcpEnabled {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("サーバ情報")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Text("\(settings.serverIPAddress):8080")
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                            Text("接続状態: \(viewModel.tcpConnectionState)")
-                                .font(.footnote)
-                                .foregroundColor(
-                                    viewModel.isTCPConnected ? .green : .orange
-                                )
-                        }
-                    }
-                    
-                    // WiFi接続情報表示
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("WiFi接続情報")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        HStack {
-                            Text("SSID:")
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                            Text(settings.wifiSSID)
-                                .font(.footnote)
-                                .foregroundColor(settings.wifiSSID == "未設定" ? .orange : .primary)
-                        }
-                        HStack {
-                            Text("サーバIP:")
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                            Text(settings.serverIPAddress)
-                                .font(.footnote)
-                                .foregroundColor(.primary)
-                        }
                     }
                 }
                 

@@ -16,12 +16,6 @@ class SensorViewModel: ObservableObject {
     @Published var selectedDeviceId: UInt8? = nil
     @Published var errorMessage: String?
     
-    // TCP関連のプロパティ
-    @Published var isTCPConnected = false
-    @Published var tcpConnectionState: String = "Disconnected"
-    @Published var activeConnectionType: String = "None"
-    @Published var tcpEnabled = false
-    
     // ハイライト管理用
     @Published var highlightedReadingIds: Set<UUID> = []
     @Published var showDataReceivedIndicator = false
@@ -62,49 +56,6 @@ class SensorViewModel: ObservableObject {
                     self?.shouldStartScanningWhenReady = false
                     self?.dataService.startBluetoothScanning()
                     self?.errorMessage = nil
-                }
-            }
-            .store(in: &cancellables)
-        
-        // Bind TCP state
-        dataService.$isTCPConnected
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] isConnected in
-                self?.isTCPConnected = isConnected
-            }
-            .store(in: &cancellables)
-        
-        dataService.$tcpConnectionState
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] state in
-                self?.tcpConnectionState = state
-            }
-            .store(in: &cancellables)
-        
-        dataService.$activeConnectionType
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] type in
-                self?.activeConnectionType = type
-            }
-            .store(in: &cancellables)
-        
-        // TCP設定の一方向バインディング（CompositeDataService → SensorViewModel）
-        dataService.$tcpEnabled
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] enabled in
-                if self?.tcpEnabled != enabled {
-                    self?.tcpEnabled = enabled
-                }
-            }
-            .store(in: &cancellables)
-        
-        // SensorViewModelからCompositeDataServiceへの変更を反映（ループ防止）
-        $tcpEnabled
-            .dropFirst() // 初期値をスキップ
-            .removeDuplicates() // 重複する値をスキップ
-            .sink { [weak self] enabled in
-                if self?.dataService.tcpEnabled != enabled {
-                    self?.dataService.tcpEnabled = enabled
                 }
             }
             .store(in: &cancellables)
@@ -240,19 +191,6 @@ class SensorViewModel: ObservableObject {
         dataService.toggleBluetoothScanning()
     }
     
-    // TCP関連メソッド
-    func startTCPConnection() {
-        dataService.startTCPConnection()
-    }
-    
-    func stopTCPConnection() {
-        dataService.stopTCPConnection()
-    }
-    
-    func toggleTCPConnection() {
-        dataService.toggleTCPConnection()
-    }
-    
     func clearReadings() {
         sensorReadings.removeAll()
         highlightedReadingIds.removeAll()
@@ -380,5 +318,9 @@ class SensorViewModel: ObservableObject {
     
     var detailedConnectionStatus: String {
         return dataService.detailedConnectionStatus
+    }
+    
+    var activeConnectionType: String {
+        return isScanning ? "Bluetooth" : "None"
     }
 }

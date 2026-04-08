@@ -108,15 +108,9 @@ struct ContentView: View {
         // フォアグラウンド復帰処理
         sharedViewModel.dataService.handleEnterForeground()
         
-        // TCP接続が有効であるのに接続していない場合、再接続を試みる
-        if sharedViewModel.tcpEnabled && !sharedViewModel.isTCPConnected {
-            print("🌐 TCP enabled but not connected, attempting reconnection")
-            sharedViewModel.startTCPConnection()
-        }
-        
         // Bluetoothスキャンが停止している場合、再開してみる
-        if !sharedViewModel.isScanning && !sharedViewModel.isTCPConnected {
-            print("📶 Bluetooth not scanning and TCP not connected, restarting scan")
+        if !sharedViewModel.isScanning {
+            print("📥 Bluetooth not scanning, restarting scan")
             sharedViewModel.startScanning()
         }
     }
