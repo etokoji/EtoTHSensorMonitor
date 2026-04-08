@@ -64,7 +64,7 @@ struct SensorData: Identifiable, Codable {
     
     var formattedTimestamp: String {
         let formatter = DateFormatter()
-        formatter.dateStyle = .none
+        formatter.dateStyle = .short
         formatter.timeStyle = .medium
         formatter.timeZone = TimeZone.current // 現在のタイムゾーンを使用
         return formatter.string(from: timestamp)
