@@ -7,6 +7,11 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>
+		<string>fetch</string>
+	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.etokoji.EtoTHSensorMonitor.bleRefresh</string>
 	</array>
 </dict>
 </plist>

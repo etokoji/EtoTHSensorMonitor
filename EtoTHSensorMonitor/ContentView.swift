@@ -105,6 +105,9 @@ struct ContentView: View {
     private func handleAppBecameActive() {
         print("🔄 Handling app became active")
         
+        // フォアグラウンド復帰処理
+        sharedViewModel.dataService.handleEnterForeground()
+        
         // TCP接続が有効であるのに接続していない場合、再接続を試みる
         if sharedViewModel.tcpEnabled && !sharedViewModel.isTCPConnected {
             print("🌐 TCP enabled but not connected, attempting reconnection")
@@ -120,8 +123,12 @@ struct ContentView: View {
     
     private func handleAppEnteredBackground() {
         print("🔄 Handling app entered background")
-        // バックグラウンド時の特別な処理が必要な場合はここに追加
-        // 現在は特に何もしない（TCPは自動的に管理される）
+        
+        // バックグラウンドでもBLEスキャンを継続
+        sharedViewModel.dataService.handleEnterBackground()
+        
+        // BGTaskSchedulerでバックグラウンドリフレッシュをスケジュール
+        AppDelegate.scheduleBLERefreshTask()
     }
 }
 

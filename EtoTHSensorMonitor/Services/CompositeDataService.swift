@@ -233,6 +233,18 @@ class CompositeDataService: ObservableObject {
         tcpEnabled.toggle()
     }
     
+    /// バックグラウンド移行時の処理
+    func handleEnterBackground() {
+        bluetoothService.handleEnterBackground()
+        print("🔄 CompositeDataService: entered background")
+    }
+    
+    /// フォアグラウンド復帰時の処理
+    func handleEnterForeground() {
+        bluetoothService.handleEnterForeground()
+        print("🔄 CompositeDataService: entered foreground")
+    }
+    
     /// WiFi設定完了後のTCP再接続用
     func forceReconnectTCP() {
         print("🌐 Force TCP reconnection after WiFi setup")

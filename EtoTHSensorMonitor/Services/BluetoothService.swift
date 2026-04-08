@@ -6,9 +6,14 @@ class BluetoothService: NSObject, ObservableObject {
     @Published var isScanning = false
     @Published var discoveredDevices: [String: SensorData] = [:]
     @Published var bluetoothState: CBManagerState = .unknown
+    @Published var isInBackground = false
     
     private var centralManager: CBCentralManager!
     private var lastSensorData: [String: (temperature: Double, humidity: Double, pressure: Double, voltage: Double)] = [:]
+    private var wasScanningBeforeBackground = false
+    
+    /// バックグラウンド状態復元用の識別子
+    static let restoreIdentifier = "com.etokoji.EtoTHSensorMonitor.bluetooth"
     
     let sensorDataPublisher = PassthroughSubject<SensorData, Never>()
     let dataReceivedPublisher = PassthroughSubject<Void, Never>()
@@ -16,7 +21,14 @@ class BluetoothService: NSObject, ObservableObject {
     
     override init() {
         super.init()
-        centralManager = CBCentralManager(delegate: self, queue: nil)
+        centralManager = CBCentralManager(
+            delegate: self,
+            queue: nil,
+            options: [
+                CBCentralManagerOptionRestoreIdentifierKey: BluetoothService.restoreIdentifier,
+                CBCentralManagerOptionShowPowerAlertKey: true
+            ]
+        )
     }
     
     func startScanning() {
@@ -29,13 +41,43 @@ class BluetoothService: NSObject, ObservableObject {
         centralManager.scanForPeripherals(withServices: nil, options: [
             CBCentralManagerScanOptionAllowDuplicatesKey: true
         ])
-        print("Started scanning for peripherals")
+        print("📶 Started scanning for peripherals (background: \(isInBackground))")
     }
     
     func stopScanning() {
         centralManager.stopScan()
         isScanning = false
-        print("Stopped scanning")
+        print("📶 Stopped scanning")
+    }
+    
+    /// バックグラウンド移行時の処理
+    func handleEnterBackground() {
+        isInBackground = true
+        wasScanningBeforeBackground = isScanning
+        
+        if isScanning {
+            // バックグラウンドでもスキャンを継続（bluetooth-centralモードにより可能）
+            // ただしiOSがallowDuplicatesを無視するため、重複フィルタリングがONになる
+            print("📶 Entering background - BLE scanning will continue with reduced frequency")
+        }
+    }
+    
+    /// フォアグラウンド復帰時の処理
+    func handleEnterForeground() {
+        isInBackground = false
+        
+        if wasScanningBeforeBackground && !isScanning {
+            // バックグラウンドでスキャンが停止されていた場合、再開
+            print("📶 Returning to foreground - restarting BLE scan")
+            startScanning()
+        } else if isScanning {
+            // スキャン中の場合、フォアグラウンド向けに再開（allowDuplicates有効化のため）
+            print("📶 Returning to foreground - refreshing BLE scan for full-speed")
+            centralManager.stopScan()
+            centralManager.scanForPeripherals(withServices: nil, options: [
+                CBCentralManagerScanOptionAllowDuplicatesKey: true
+            ])
+        }
     }
     
     private func decodeENVPayload(from data: Data) -> (deviceId: UInt8, readingId: UInt16, temperature: Double, humidity: Double, pressure: Double, voltage: Double)? {
@@ -95,16 +137,35 @@ extension BluetoothService: CBCentralManagerDelegate {
         
         switch central.state {
         case .poweredOn:
-            print("Bluetooth is powered on")
+            print("📶 Bluetooth is powered on")
+            // 状態復元後にスキャンが必要な場合、自動再開
+            if wasScanningBeforeBackground && !isScanning {
+                print("📶 Resuming scanning after state restoration")
+                startScanning()
+            }
         case .poweredOff:
-            print("Bluetooth is powered off")
+            print("📶 Bluetooth is powered off")
             stopScanning()
         case .unauthorized:
-            print("Bluetooth access denied")
+            print("📶 Bluetooth access denied")
         case .unsupported:
-            print("Bluetooth not supported")
+            print("📶 Bluetooth not supported")
         default:
-            print("Bluetooth state: \(central.state.rawValue)")
+            print("📶 Bluetooth state: \(central.state.rawValue)")
+        }
+    }
+    
+    /// CoreBluetooth状態復元デリゲート - アプリがシステムに終了された後に再起動された場合に呼ばれる
+    func centralManager(_ central: CBCentralManager, willRestoreState dict: [String: Any]) {
+        print("📶 CoreBluetooth state restoration")
+        
+        // 復元前にスキャン中だったかどうかを確認
+        if let restoredScanServices = dict[CBCentralManagerRestoredStateScanServicesKey] as? [CBUUID] {
+            print("📶 Restored scan services: \(restoredScanServices)")
+            wasScanningBeforeBackground = true
+        } else if dict[CBCentralManagerRestoredStateScanOptionsKey] != nil {
+            print("📶 Restored scan options found - was scanning")
+            wasScanningBeforeBackground = true
         }
     }
     
