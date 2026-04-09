@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		ABDA672A2F86A13E00523163 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABDA67092F869D0200523163 /* WidgetKit.framework */; };
+		ABDA672B2F86A13E00523163 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABDA670B2F869D0200523163 /* SwiftUI.framework */; };
+		ABDA673A2F86A13F00523163 /* EtoTHSensorWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = ABDA67292F86A13E00523163 /* EtoTHSensorWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		ABC703C42E6853FD006E6F97 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -21,12 +27,38 @@
 			remoteGlobalIDString = ABC703B52E6853FC006E6F97;
 			remoteInfo = EtoTHSensorMonitor;
 		};
+		ABDA67382F86A13F00523163 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ABC703AE2E6853FC006E6F97 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ABDA67282F86A13E00523163;
+			remoteInfo = EtoTHSensorWidgetExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		ABDA671C2F869D0300523163 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				ABDA673A2F86A13F00523163 /* EtoTHSensorWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		ABC703B62E6853FC006E6F97 /* EtoTHSensorMonitor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EtoTHSensorMonitor.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABC703C32E6853FD006E6F97 /* EtoTHSensorMonitorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EtoTHSensorMonitorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABC703CD2E6853FD006E6F97 /* EtoTHSensorMonitorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EtoTHSensorMonitorUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		ABDA67092F869D0200523163 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		ABDA670B2F869D0200523163 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		ABDA67292F86A13E00523163 /* EtoTHSensorWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = EtoTHSensorWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		ABDA67402F86A22F00523163 /* Widget ExtensionExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Widget ExtensionExtension.entitlements"; sourceTree = "<group>"; };
+		ABDA67412F86A29F00523163 /* EtoTHSensorWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EtoTHSensorWidgetExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -37,6 +69,20 @@
 			);
 			target = ABC703B52E6853FC006E6F97 /* EtoTHSensorMonitor */;
 		};
+		ABDA673E2F86A13F00523163 /* Exceptions for "EtoTHSensorWidget" folder in "EtoTHSensorWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = ABDA67282F86A13E00523163 /* EtoTHSensorWidgetExtension */;
+		};
+		ABDA67432F86A2E600523163 /* Exceptions for "EtoTHSensorMonitor" folder in "EtoTHSensorWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Models/SensorData.swift,
+			);
+			target = ABDA67282F86A13E00523163 /* EtoTHSensorWidgetExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -44,6 +90,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				ABCD1D482E6AF8D000D2FC79 /* Exceptions for "EtoTHSensorMonitor" folder in "EtoTHSensorMonitor" target */,
+				ABDA67432F86A2E600523163 /* Exceptions for "EtoTHSensorMonitor" folder in "EtoTHSensorWidgetExtension" target */,
 			);
 			path = EtoTHSensorMonitor;
 			sourceTree = "<group>";
@@ -56,6 +103,14 @@
 		ABC703D02E6853FD006E6F97 /* EtoTHSensorMonitorUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = EtoTHSensorMonitorUITests;
+			sourceTree = "<group>";
+		};
+		ABDA672C2F86A13E00523163 /* EtoTHSensorWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				ABDA673E2F86A13F00523163 /* Exceptions for "EtoTHSensorWidget" folder in "EtoTHSensorWidgetExtension" target */,
+			);
+			path = EtoTHSensorWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -82,15 +137,28 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		ABDA67262F86A13E00523163 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ABDA672B2F86A13E00523163 /* SwiftUI.framework in Frameworks */,
+				ABDA672A2F86A13E00523163 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		ABC703AD2E6853FC006E6F97 = {
 			isa = PBXGroup;
 			children = (
+				ABDA67412F86A29F00523163 /* EtoTHSensorWidgetExtension.entitlements */,
+				ABDA67402F86A22F00523163 /* Widget ExtensionExtension.entitlements */,
 				ABC703B82E6853FC006E6F97 /* EtoTHSensorMonitor */,
 				ABC703C62E6853FD006E6F97 /* EtoTHSensorMonitorTests */,
 				ABC703D02E6853FD006E6F97 /* EtoTHSensorMonitorUITests */,
+				ABDA672C2F86A13E00523163 /* EtoTHSensorWidget */,
+				ABDA67082F869D0200523163 /* Frameworks */,
 				ABC703B72E6853FC006E6F97 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -101,8 +169,18 @@
 				ABC703B62E6853FC006E6F97 /* EtoTHSensorMonitor.app */,
 				ABC703C32E6853FD006E6F97 /* EtoTHSensorMonitorTests.xctest */,
 				ABC703CD2E6853FD006E6F97 /* EtoTHSensorMonitorUITests.xctest */,
+				ABDA67292F86A13E00523163 /* EtoTHSensorWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		ABDA67082F869D0200523163 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				ABDA67092F869D0200523163 /* WidgetKit.framework */,
+				ABDA670B2F869D0200523163 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -115,10 +193,12 @@
 				ABC703B22E6853FC006E6F97 /* Sources */,
 				ABC703B32E6853FC006E6F97 /* Frameworks */,
 				ABC703B42E6853FC006E6F97 /* Resources */,
+				ABDA671C2F869D0300523163 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				ABDA67392F86A13F00523163 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				ABC703B82E6853FC006E6F97 /* EtoTHSensorMonitor */,
@@ -176,6 +256,28 @@
 			productReference = ABC703CD2E6853FD006E6F97 /* EtoTHSensorMonitorUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		ABDA67282F86A13E00523163 /* EtoTHSensorWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ABDA673B2F86A13F00523163 /* Build configuration list for PBXNativeTarget "EtoTHSensorWidgetExtension" */;
+			buildPhases = (
+				ABDA67252F86A13E00523163 /* Sources */,
+				ABDA67262F86A13E00523163 /* Frameworks */,
+				ABDA67272F86A13E00523163 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				ABDA672C2F86A13E00523163 /* EtoTHSensorWidget */,
+			);
+			name = EtoTHSensorWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = EtoTHSensorWidgetExtension;
+			productReference = ABDA67292F86A13E00523163 /* EtoTHSensorWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -183,7 +285,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1640;
+				LastSwiftUpdateCheck = 2640;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					ABC703B52E6853FC006E6F97 = {
@@ -196,6 +298,9 @@
 					ABC703CC2E6853FD006E6F97 = {
 						CreatedOnToolsVersion = 16.4;
 						TestTargetID = ABC703B52E6853FC006E6F97;
+					};
+					ABDA67282F86A13E00523163 = {
+						CreatedOnToolsVersion = 26.4;
 					};
 				};
 			};
@@ -216,6 +321,7 @@
 				ABC703B52E6853FC006E6F97 /* EtoTHSensorMonitor */,
 				ABC703C22E6853FD006E6F97 /* EtoTHSensorMonitorTests */,
 				ABC703CC2E6853FD006E6F97 /* EtoTHSensorMonitorUITests */,
+				ABDA67282F86A13E00523163 /* EtoTHSensorWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -236,6 +342,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		ABC703CB2E6853FD006E6F97 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ABDA67272F86A13E00523163 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -266,6 +379,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		ABDA67252F86A13E00523163 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -278,6 +398,11 @@
 			isa = PBXTargetDependency;
 			target = ABC703B52E6853FC006E6F97 /* EtoTHSensorMonitor */;
 			targetProxy = ABC703CE2E6853FD006E6F97 /* PBXContainerItemProxy */;
+		};
+		ABDA67392F86A13F00523163 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ABDA67282F86A13E00523163 /* EtoTHSensorWidgetExtension */;
+			targetProxy = ABDA67382F86A13F00523163 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -541,6 +666,74 @@
 			};
 			name = Release;
 		};
+		ABDA673C2F86A13F00523163 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = EtoTHSensorWidgetExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PGMR9WGF47;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = EtoTHSensorWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = EtoTHSensorWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.etokoji.EtoTHSensorMonitor.EtoTHSensorWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		ABDA673D2F86A13F00523163 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = EtoTHSensorWidgetExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PGMR9WGF47;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = EtoTHSensorWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = EtoTHSensorWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.etokoji.EtoTHSensorMonitor.EtoTHSensorWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -576,6 +769,15 @@
 			buildConfigurations = (
 				ABC703DE2E6853FD006E6F97 /* Debug */,
 				ABC703DF2E6853FD006E6F97 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ABDA673B2F86A13F00523163 /* Build configuration list for PBXNativeTarget "EtoTHSensorWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ABDA673C2F86A13F00523163 /* Debug */,
+				ABDA673D2F86A13F00523163 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

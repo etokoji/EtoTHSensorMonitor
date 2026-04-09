@@ -98,6 +98,16 @@ struct SensorWidgetEntryView: View {
     @Environment(\.widgetFamily) var family
 
     var body: some View {
+        if #available(iOS 17.0, macOS 14.0, *) {
+            mainContent
+                .containerBackground(for: .widget) { Color(.systemBackground) }
+        } else {
+            mainContent
+        }
+    }
+
+    @ViewBuilder
+    private var mainContent: some View {
         if let data = entry.sensorData {
             switch family {
             case .systemSmall:
@@ -166,7 +176,6 @@ struct SensorWidgetEntryView: View {
                 .lineLimit(1)
         }
         .padding(12)
-        .background(ContainerRelativeShape().fill(.background))
     }
 
     // MARK: Medium Widget (4x2)
@@ -210,7 +219,6 @@ struct SensorWidgetEntryView: View {
             }
         }
         .padding(12)
-        .background(ContainerRelativeShape().fill(.background))
     }
 
     // MARK: Large Widget (4x4)
@@ -254,7 +262,6 @@ struct SensorWidgetEntryView: View {
             }
         }
         .padding(16)
-        .background(ContainerRelativeShape().fill(.background))
     }
 
     // MARK: Lock Screen - Circular
