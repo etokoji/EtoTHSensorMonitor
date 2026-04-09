@@ -1,0 +1,3 @@
+[submodule "sensor-monitor-support"]
+	path = sensor-monitor-support
+	url = https://github.com/etokoji/sensor-monitor-support.git

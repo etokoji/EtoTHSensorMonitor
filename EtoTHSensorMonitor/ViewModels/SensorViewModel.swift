@@ -15,6 +15,7 @@ class SensorViewModel: ObservableObject {
     @Published var bluetoothState: CBManagerState = .unknown
     @Published var selectedDeviceId: UInt8? = nil
     @Published var errorMessage: String?
+    @Published var showBluetoothUnauthorizedAlert = false
     
     // 過去ログ関連
     @Published var availableLogDates: [Date] = []
@@ -56,6 +57,11 @@ class SensorViewModel: ObservableObject {
             .sink { [weak self] state in
                 let previousState = self?.bluetoothState
                 self?.bluetoothState = state
+                
+                // Bluetooth未許可になった場合はアラートを表示
+                if state == .unauthorized && previousState != .unauthorized {
+                    self?.showBluetoothUnauthorizedAlert = true
+                }
                 
                 // Bluetoothが有効になって、スキャンが要求されている場合は自動開始
                 if state == .poweredOn && previousState != .poweredOn && self?.shouldStartScanningWhenReady == true {
