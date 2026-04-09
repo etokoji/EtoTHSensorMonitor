@@ -14,7 +14,20 @@ class SharedDataManager {
         UserDefaults(suiteName: SharedDataManager.appGroupID)
     }
 
-    private init() {}
+    private init() {
+        debugStatus()
+    }
+
+    /// App Groupの動作状況をコンソールに出力
+    func debugStatus() {
+        if let defaults = sharedDefaults {
+            let hasData = defaults.data(forKey: SharedDataManager.latestReadingKey) != nil
+            print("📊 App Group OK - latestReading: \(hasData ? "あり" : "なし")")
+        } else {
+            print("❌ App Group NG - UserDefaults(suiteName:) が nil を返しました")
+            print("❌ エンタイトルまたはProvisioning Profileを確認してください")
+        }
+    }
 
     // MARK: - 書き込み（メインアプリ側）
 
