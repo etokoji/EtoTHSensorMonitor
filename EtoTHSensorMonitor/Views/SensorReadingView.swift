@@ -8,7 +8,19 @@ struct SensorReadingView: View {
     @State private var highlightOpacity: Double = 0.0
     
     private var isIPad: Bool {
+        #if canImport(UIKit)
         UIDevice.current.userInterfaceIdiom == .pad
+        #else
+        false
+        #endif
+    }
+    
+    private var cardBackground: Color {
+        #if canImport(UIKit)
+        Color(UIColor.systemBackground)
+        #else
+        Color(NSColor.windowBackgroundColor)
+        #endif
     }
     
     var body: some View {
@@ -170,7 +182,7 @@ struct SensorReadingView: View {
             ZStack {
                 // 基本背景
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(Color(.systemBackground))
+                    .fill(cardBackground)
                 
                 // アニメーション背景オーバーレイ - 明るい色で目立たせる
                 RoundedRectangle(cornerRadius: 8)
@@ -296,7 +308,11 @@ struct CompactSensorValue: View {
     let color: Color
     
     private var isIPad: Bool {
+        #if canImport(UIKit)
         UIDevice.current.userInterfaceIdiom == .pad
+        #else
+        false
+        #endif
     }
     
     var body: some View {

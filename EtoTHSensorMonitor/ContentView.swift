@@ -4,6 +4,7 @@ struct ContentView: View {
     @StateObject private var sharedViewModel = SensorViewModel()
     @State private var showingSettings = false
     @State private var isAppActive = true
+    @Environment(\.scenePhase) private var scenePhase
     
     var body: some View {
         TabView {
@@ -26,7 +27,7 @@ struct ContentView: View {
                     }
                 }
                 .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
+                    ToolbarItem(placement: .automatic) {
                         Button(action: { showingSettings = true }) {
                             Image(systemName: "gearshape.fill")
                         }
@@ -49,54 +50,46 @@ struct ContentView: View {
             SettingsView(viewModel: sharedViewModel)
         }
         .onAppear {
-            // タブバーの見た目をカスタマイズ
+            #if os(iOS)
+            // タブバーの見た目をカスタマイズ（iOS only）
             let tabBarAppearance = UITabBarAppearance()
             tabBarAppearance.configureWithOpaqueBackground()
-            tabBarAppearance.backgroundColor = UIColor.systemGray6 // 背景色を設定
-            
-            // 選択されていないタブの色
+            tabBarAppearance.backgroundColor = UIColor.systemGray6
             tabBarAppearance.stackedLayoutAppearance.normal.titleTextAttributes = [
                 .font: UIFont.systemFont(ofSize: 14, weight: .medium),
                 .foregroundColor: UIColor.systemGray
             ]
             tabBarAppearance.stackedLayoutAppearance.normal.iconColor = UIColor.systemGray
-            
-            // 選択されたタブの色
             tabBarAppearance.stackedLayoutAppearance.selected.titleTextAttributes = [
                 .font: UIFont.systemFont(ofSize: 14, weight: .semibold),
                 .foregroundColor: UIColor.systemBlue
             ]
             tabBarAppearance.stackedLayoutAppearance.selected.iconColor = UIColor.systemBlue
-            
-            // 上部に境界線を追加
             tabBarAppearance.shadowColor = UIColor.systemGray4
             tabBarAppearance.shadowImage = UIImage()
-            
             UITabBar.appearance().standardAppearance = tabBarAppearance
             UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+            #endif
             
-            // アプリ起動時にグローバルにスキャンを開始
             print("🚀 App started - initializing bluetooth scanning")
             sharedViewModel.startScanning()
         }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
-            print("📱 App will enter foreground")
-            isAppActive = true
-            handleAppBecameActive()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
-            print("📱 App entered background")
-            isAppActive = false
-            handleAppEnteredBackground()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
-            print("📱 App became active")
-            isAppActive = true
-            handleAppBecameActive()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
-            print("📱 App will resign active")
-            isAppActive = false
+        .onChange(of: scenePhase) { _, newPhase in
+            switch newPhase {
+            case .active:
+                print("📱 App became active")
+                isAppActive = true
+                handleAppBecameActive()
+            case .background:
+                print("📱 App entered background")
+                isAppActive = false
+                handleAppEnteredBackground()
+            case .inactive:
+                print("📱 App will resign active")
+                isAppActive = false
+            @unknown default:
+                break
+            }
         }
     }
     
@@ -121,8 +114,10 @@ struct ContentView: View {
         // バックグラウンドでもBLEスキャンを継続
         sharedViewModel.dataService.handleEnterBackground()
         
+        #if os(iOS)
         // BGTaskSchedulerでバックグラウンドリフレッシュをスケジュール
         AppDelegate.scheduleBLERefreshTask()
+        #endif
     }
 }
 
@@ -132,7 +127,27 @@ struct HistoryView: View {
     @State private var expandedDate: Date? = nil
     
     private var isIPad: Bool {
+        #if canImport(UIKit)
         UIDevice.current.userInterfaceIdiom == .pad
+        #else
+        false
+        #endif
+    }
+    
+    private var sectionBgColor: Color {
+        #if canImport(UIKit)
+        Color(UIColor.systemGray6)
+        #else
+        Color(NSColor.windowBackgroundColor)
+        #endif
+    }
+    
+    private var dateBgColor: Color {
+        #if canImport(UIKit)
+        Color(UIColor.systemGray5)
+        #else
+        Color(NSColor.controlBackgroundColor)
+        #endif
     }
     
     var body: some View {
@@ -190,13 +205,13 @@ struct HistoryView: View {
                     }
                 }
                 
-                // Data received indicator
+                // Data received indicator（左端に表示）
                 if viewModel.showDataReceivedIndicator {
                     VStack {
                         HStack {
-                            Spacer()
                             DataReceivedIndicator()
-                                .padding(.trailing, 60)
+                                .padding(.leading, 16)
+                            Spacer()
                         }
                         .padding(.top, -35)
                         Spacer()
@@ -205,12 +220,14 @@ struct HistoryView: View {
                 }
             }
             .navigationTitle("センサー履歴")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .automatic) {
                     ConnectionStatusIndicator(viewModel: viewModel, isCompact: true)
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button(action: viewModel.toggleScanning) {
                         Image(systemName: viewModel.isScanning ? "stop.circle.fill" : "play.circle.fill")
                             .foregroundColor(viewModel.isScanning ? .red : .green)
@@ -226,14 +243,18 @@ struct HistoryView: View {
             }
             updateOrientation()
         }
+        #if os(iOS)
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
             updateOrientation()
         }
-        .alert("Bluetoothアクセスが拒否されました", isPresented: $viewModel.showBluetoothUnauthorizedAlert) {
+        #endif
+        .alert("ブルートゥースアクセスが拒否されました", isPresented: $viewModel.showBluetoothUnauthorizedAlert) {
             Button("設定を開く") {
+                #if os(iOS)
                 if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(settingsUrl)
                 }
+                #endif
             }
             Button("キャンセル", role: .cancel) { }
         } message: {
@@ -265,7 +286,7 @@ struct HistoryView: View {
         .padding(.vertical, 6)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color(.systemGray6))
+        .fill(sectionBgColor)
         )
     }
     
@@ -286,7 +307,7 @@ struct HistoryView: View {
         .padding(.vertical, 6)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color(.systemGray6))
+                .fill(sectionBgColor)
         )
     }
 
@@ -317,7 +338,7 @@ struct HistoryView: View {
                 .padding(.vertical, 6)
                 .background(
                     RoundedRectangle(cornerRadius: 6)
-                        .fill(Color(.systemGray5))
+                        .fill(dateBgColor)
                 )
             }
             .buttonStyle(.plain)
@@ -395,10 +416,12 @@ struct HistoryView: View {
     }
     
     private func updateOrientation() {
+        #if os(iOS)
         let orientation = UIDevice.current.orientation
         withAnimation(.easeInOut(duration: 0.3)) {
             isLandscape = orientation.isLandscape
         }
+        #endif
     }
 }
 

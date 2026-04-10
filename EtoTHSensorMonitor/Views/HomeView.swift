@@ -5,7 +5,11 @@ struct HomeView: View {
     @State private var isLandscape = false
     
     private var isIPad: Bool {
+        #if canImport(UIKit)
         UIDevice.current.userInterfaceIdiom == .pad
+        #else
+        false  // macOSではiPad判定なし（画面幅で大画面判定）
+        #endif
     }
     
     // 動的に画面サイズに基づいて大画面かどうかを判定
@@ -156,7 +160,7 @@ struct HomeView: View {
                     } else {
                         // No data state
                         VStack(spacing: 20) {
-                            Image(systemName: "sensors")
+                            Image(systemName: "antenna.radiowaves.left.and.right")
                                 .font(.system(size: 60))
                                 .foregroundColor(.gray)
                             
@@ -183,7 +187,9 @@ struct HomeView: View {
             )
         }
         .navigationTitle("ホーム")
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .onAppear {
             // デバッグ情報を表示
             print("🏠 HomeView appeared - scanning status: \(viewModel.isScanning)")
@@ -197,14 +203,18 @@ struct HomeView: View {
             // 初期化時に向きをチェック
             updateOrientation()
         }
+        #if os(iOS)
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
             updateOrientation()
         }
+        #endif
         .alert("Bluetoothアクセスが拒否されました", isPresented: $viewModel.showBluetoothUnauthorizedAlert) {
             Button("設定を開く") {
+                #if os(iOS)
                 if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(settingsUrl)
                 }
+                #endif
             }
             Button("キャンセル", role: .cancel) { }
         } message: {
@@ -213,10 +223,12 @@ struct HomeView: View {
     }
     
     private func updateOrientation() {
+        #if os(iOS)
         let orientation = UIDevice.current.orientation
         withAnimation(.easeInOut(duration: 0.3)) {
             isLandscape = orientation.isLandscape
         }
+        #endif
     }
     
     private func formattedTimestamp(_ date: Date) -> String {
@@ -236,6 +248,14 @@ struct SensorCard: View {
     var isCompact: Bool = false
     var isLargeScreen: Bool = false
     var isCompactDevice: Bool = false
+    
+    private var cardBackground: Color {
+        #if canImport(UIKit)
+        Color(UIColor.systemBackground)
+        #else
+        Color(NSColor.windowBackgroundColor)
+        #endif
+    }
     
     var body: some View {
         if isCompact {
@@ -269,7 +289,7 @@ struct SensorCard: View {
             .padding(.vertical, 10)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.systemBackground))
+                .fill(cardBackground)
                     .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
             )
         } else {
@@ -304,7 +324,7 @@ struct SensorCard: View {
             .padding(.vertical, isCompactDevice ? 18 : 15)
             .background(
                 RoundedRectangle(cornerRadius: isCompactDevice ? 18 : 15)
-                    .fill(Color(.systemBackground))
+                    .fill(cardBackground)
                     .shadow(color: Color.black.opacity(0.1), radius: isCompactDevice ? 6 : 5, x: 0, y: 2)
             )
         }

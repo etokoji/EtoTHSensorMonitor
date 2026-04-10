@@ -3,6 +3,14 @@ import SwiftUI
 struct CompactSensorCard: View {
     let sensorData: SensorData
     
+    private var cardBackgroundColor: Color {
+        #if canImport(UIKit)
+        Color(UIColor.secondarySystemBackground)
+        #else
+        Color(NSColor.controlBackgroundColor)
+        #endif
+    }
+    
     var body: some View {
         HStack(spacing: 12) {
             // Device info
@@ -85,7 +93,7 @@ struct CompactSensorCard: View {
         .padding(.vertical, 8)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color(.secondarySystemBackground))
+        .fill(cardBackgroundColor)
         )
     }
 }
