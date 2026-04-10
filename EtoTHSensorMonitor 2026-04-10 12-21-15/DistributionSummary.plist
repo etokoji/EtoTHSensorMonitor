@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>EtoTHSensorMonitor.ipa</key>
+	<array>
+		<dict>
+			<key>architectures</key>
+			<array>
+				<string>arm64</string>
+			</array>
+			<key>buildNumber</key>
+			<string>1</string>
+			<key>certificate</key>
+			<dict>
+				<key>SHA1</key>
+				<string>E682346C7D9B71297C398C01F97F4C8DBC0F3A31</string>
+				<key>dateExpires</key>
+				<string>2026/09/13</string>
+				<key>type</key>
+				<string>Cloud Managed Apple Distribution</string>
+			</dict>
+			<key>embeddedBinaries</key>
+			<array>
+				<dict>
+					<key>architectures</key>
+					<array>
+						<string>arm64</string>
+					</array>
+					<key>buildNumber</key>
+					<string>1</string>
+					<key>certificate</key>
+					<dict>
+						<key>SHA1</key>
+						<string>E682346C7D9B71297C398C01F97F4C8DBC0F3A31</string>
+						<key>dateExpires</key>
+						<string>2026/09/13</string>
+						<key>type</key>
+						<string>Cloud Managed Apple Distribution</string>
+					</dict>
+					<key>entitlements</key>
+					<dict>
+						<key>application-identifier</key>
+						<string>PGMR9WGF47.com.etokoji.EtoTHSensorMonitor.EtoTHSensorWidget</string>
+						<key>com.apple.developer.team-identifier</key>
+						<string>PGMR9WGF47</string>
+						<key>com.apple.security.application-groups</key>
+						<array>
+							<string>group.com.etokoji.EtoTHSensorMonitor</string>
+						</array>
+						<key>get-task-allow</key>
+						<false/>
+					</dict>
+					<key>name</key>
+					<string>EtoTHSensorWidgetExtension.appex</string>
+					<key>profile</key>
+					<dict>
+						<key>UUID</key>
+						<string>fb984574-b2b4-470b-b1ca-5c182a4bdf61</string>
+						<key>dateExpires</key>
+						<string>2026/09/13</string>
+						<key>name</key>
+						<string>iOS Team Ad Hoc Provisioning Profile: com.etokoji.EtoTHSensorMonitor.EtoTHSensorWidget</string>
+					</dict>
+					<key>team</key>
+					<dict>
+						<key>id</key>
+						<string>PGMR9WGF47</string>
+						<key>name</key>
+						<string>公二 江藤</string>
+					</dict>
+					<key>versionNumber</key>
+					<string>2.0</string>
+				</dict>
+			</array>
+			<key>entitlements</key>
+			<dict>
+				<key>application-identifier</key>
+				<string>PGMR9WGF47.com.etokoji.EtoTHSensorMonitor</string>
+				<key>com.apple.developer.networking.wifi-info</key>
+				<true/>
+				<key>com.apple.developer.team-identifier</key>
+				<string>PGMR9WGF47</string>
+				<key>com.apple.security.application-groups</key>
+				<array>
+					<string>group.com.etokoji.EtoTHSensorMonitor</string>
+				</array>
+				<key>get-task-allow</key>
+				<false/>
+			</dict>
+			<key>name</key>
+			<string>EtoTHSensorMonitor.app</string>
+			<key>profile</key>
+			<dict>
+				<key>UUID</key>
+				<string>2c23bf28-de59-47ca-b829-c7c36b86052a</string>
+				<key>dateExpires</key>
+				<string>2026/09/13</string>
+				<key>name</key>
+				<string>iOS Team Ad Hoc Provisioning Profile: com.etokoji.EtoTHSensorMonitor</string>
+			</dict>
+			<key>team</key>
+			<dict>
+				<key>id</key>
+				<string>PGMR9WGF47</string>
+				<key>name</key>
+				<string>公二 江藤</string>
+			</dict>
+			<key>versionNumber</key>
+			<string>2.0</string>
+		</dict>
+	</array>
+</dict>
+</plist>
