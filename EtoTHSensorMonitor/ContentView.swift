@@ -39,6 +39,12 @@ struct ContentView: View {
                 Text("ホーム")
             }
             
+            GraphView(viewModel: sharedViewModel)
+                .tabItem {
+                    Image(systemName: "chart.xyaxis.line")
+                        Text("グラフ")
+                }
+                
             HistoryView(viewModel: sharedViewModel)
                 .tabItem {
                     Image(systemName: "clock.arrow.circlepath")
