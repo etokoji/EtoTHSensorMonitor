@@ -130,7 +130,13 @@ struct ContentView: View {
 struct HistoryView: View {
     @ObservedObject var viewModel: SensorViewModel
     @State private var isLandscape = false
-    @State private var expandedDate: Date? = nil
+    @State private var dataSourceType: DataSourceType = .currentSession
+    @State private var selectedLogDate: Date? = nil
+    
+    enum DataSourceType: String, CaseIterable {
+        case currentSession = "直近セッション"
+        case pastLog = "過去ログ"
+    }
     
     private var isIPad: Bool {
         #if canImport(UIKit)
@@ -140,74 +146,112 @@ struct HistoryView: View {
         #endif
     }
     
-    private var sectionBgColor: Color {
-        #if canImport(UIKit)
-        Color(UIColor.systemGray6)
-        #else
-        Color(NSColor.windowBackgroundColor)
-        #endif
-    }
-    
-    private var dateBgColor: Color {
-        #if canImport(UIKit)
-        Color(UIColor.systemGray5)
-        #else
-        Color(NSColor.controlBackgroundColor)
-        #endif
+    // 現在選択されているデータソースの生データ
+    private var listData: [SensorData] {
+        if dataSourceType == .currentSession {
+            return viewModel.sensorReadings
+        } else {
+            return viewModel.selectedDateReadings
+        }
     }
     
     var body: some View {
         NavigationStack {
             ZStack {
                 VStack(spacing: 0) {
-                    // 現在セッション + 過去ログを一つのScrollViewで表示
-                    ScrollView {
-                        LazyVStack(spacing: 0) {
-                            // --- 現在セッションヘッダー ---
-                            currentSessionHeader
-                                .padding(.horizontal)
-                                .padding(.top, 8)
-                                .padding(.bottom, 4)
-                            
-                            if viewModel.sensorReadings.isEmpty {
-                                emptyStateView
-                                    .padding(.bottom, 8)
-                            } else {
-                                LazyVStack(spacing: isLandscape ? 3 : 6) {
-                                    ForEach(viewModel.sensorReadings) { reading in
-                                        SensorReadingView(
-                                            sensorData: reading,
-                                            isHighlighted: viewModel.highlightedReadingIds.contains(reading.id),
-                                            isLandscapeCompact: isLandscape || isIPad
-                                        )
-                                        .padding(.horizontal, 8)
-                                    }
-                                }
-                                .padding(.vertical, 4)
-                            }
-                            
-                            // --- 過去ログセクション ---
-                            pastLogSectionHeader
-                                .padding(.horizontal)
-                                .padding(.top, 8)
-                                .padding(.bottom, 4)
-                            
-                            if viewModel.availableLogDates.isEmpty {
-                                Text("ログファイルなし")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .padding()
-                            } else {
-                                LazyVStack(spacing: 4) {
-                                    ForEach(viewModel.availableLogDates, id: \.self) { date in
-                                        dateSection(for: date)
-                                    }
-                                }
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
+                    // コントロールパネル
+                    VStack(spacing: 12) {
+                        // データソース切り替え
+                        Picker("データソース", selection: $dataSourceType) {
+                            ForEach(DataSourceType.allCases, id: \.self) { type in
+                                Text(type.rawValue).tag(type)
                             }
                         }
-                        .padding(.bottom, 8)
+                        .pickerStyle(SegmentedPickerStyle())
+                        .padding(.horizontal)
+                        
+                        // 過去ログ選択時の日付ピッカー
+                        if dataSourceType == .pastLog {
+                            HStack {
+                                Text("日付:")
+                                    .foregroundColor(.secondary)
+                                
+                                if viewModel.availableLogDates.isEmpty {
+                                    Text("ログなし")
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    Picker("日付を選択", selection: $selectedLogDate) {
+                                        Text("選択してください").tag(Date?.none)
+                                        ForEach(viewModel.availableLogDates, id: \.self) { date in
+                                            Text(formattedLogDate(date)).tag(Date?.some(date))
+                                        }
+                                    }
+                                    .pickerStyle(MenuPickerStyle())
+                                    .onChange(of: selectedLogDate) { _, newDate in
+                                        if let date = newDate {
+                                            viewModel.loadReadings(for: date)
+                                        }
+                                    }
+                                }
+                                
+                                Spacer()
+                                
+                                if viewModel.isLoadingDate {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                }
+                            }
+                            .padding(.horizontal)
+                            .onAppear {
+                                // 過去ログタブを開いた時に初期選択を設定
+                                if selectedLogDate == nil, let firstDate = viewModel.availableLogDates.first {
+                                    selectedLogDate = firstDate
+                                    viewModel.loadReadings(for: firstDate)
+                                }
+                            }
+                        } else {
+                            // 直近セッション時のクリアボタン等
+                            HStack {
+                                Text("データ件数: \(listData.count)件")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                if !listData.isEmpty {
+                                    Button("クリア") {
+                                        viewModel.clearReadings()
+                                    }
+                                    .font(.caption)
+                                    .foregroundColor(.red)
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                    }
+                    .padding(.top, 10)
+                    .padding(.bottom, 8)
+                    
+                    Divider()
+                    
+                    // データ一覧領域
+                    if listData.isEmpty {
+                        Spacer()
+                        emptyStateView
+                        Spacer()
+                    } else {
+                        ScrollView {
+                            LazyVStack(spacing: isLandscape ? 3 : 6) {
+                                ForEach(listData) { reading in
+                                    SensorReadingView(
+                                        sensorData: reading,
+                                        isHighlighted: dataSourceType == .currentSession && viewModel.highlightedReadingIds.contains(reading.id),
+                                        isLandscapeCompact: isLandscape || isIPad
+                                    )
+                                    .opacity(dataSourceType == .pastLog ? 0.8 : 1.0)
+                                }
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 8)
+                        }
                     }
                 }
                 
@@ -268,126 +312,34 @@ struct HistoryView: View {
         }
     }
     
-    // 現在セッションヘッダー
-    private var currentSessionHeader: some View {
-        HStack {
-            Label("現在のセッション", systemImage: "dot.radiowaves.left.and.right")
-                .font(.caption)
+    private var emptyStateView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "sensor.tag.radiowaves.forward")
+                .font(.system(size: 40))
                 .foregroundColor(.secondary)
-            if !viewModel.sensorReadings.isEmpty {
-                Text("(\(viewModel.sensorReadings.count)件)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            Spacer()
-            if !viewModel.sensorReadings.isEmpty {
-                Button("クリア") {
-                    viewModel.clearReadings()
+            
+            Text(dataSourceType == .currentSession ? "デバイスを検索中..." : "データなし")
+                .font(.headline)
+                .foregroundColor(.secondary)
+            
+            if dataSourceType == .currentSession && !viewModel.isScanning && viewModel.bluetoothState == .poweredOn {
+                Button("スキャン開始") {
+                    viewModel.startScanning()
                 }
-                .font(.caption)
-                .foregroundColor(.red)
+                .buttonStyle(.borderedProminent)
             }
         }
-        .padding(.horizontal, 4)
-        .padding(.vertical, 6)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-        .fill(sectionBgColor)
-        )
     }
     
-    // 過去ログセクションヘッダー
-    private var pastLogSectionHeader: some View {
-        HStack {
-            Label("過去ログ", systemImage: "clock.arrow.circlepath")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            if !viewModel.availableLogDates.isEmpty {
-                Text("(\(viewModel.availableLogDates.count)日分)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            Spacer()
+    private func updateOrientation() {
+        #if os(iOS)
+        let orientation = UIDevice.current.orientation
+        withAnimation(.easeInOut(duration: 0.3)) {
+            isLandscape = orientation.isLandscape
         }
-        .padding(.horizontal, 4)
-        .padding(.vertical, 6)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(sectionBgColor)
-        )
+        #endif
     }
-
-    // 日付ごとの折りたたみセクション
-    @ViewBuilder
-    private func dateSection(for date: Date) -> some View {
-        VStack(spacing: 4) {
-            // 日付行（タップで展開/折りたたみ）
-            Button(action: { toggleDate(date) }) {
-                HStack {
-                    Image(systemName: "calendar")
-                        .foregroundColor(.blue)
-                        .font(.caption)
-                    Text(formattedLogDate(date))
-                        .font(.caption)
-                        .foregroundColor(.primary)
-                    Spacer()
-                    if viewModel.isLoadingDate && isSameDay(viewModel.loadedDate, date) {
-                        ProgressView().scaleEffect(0.7)
-                    } else {
-                        Image(systemName: expandedDate.map { isSameDay($0, date) } == true
-                              ? "chevron.up" : "chevron.down")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 6)
-                .background(
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(dateBgColor)
-                )
-            }
-            .buttonStyle(.plain)
-
-            // 展開時のデータ一覧
-            if expandedDate.map({ isSameDay($0, date) }) == true
-                && !viewModel.isLoadingDate {
-                if viewModel.selectedDateReadings.isEmpty {
-                    Text("データなし")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .padding(.vertical, 4)
-                } else {
-                    LazyVStack(spacing: isLandscape ? 3 : 6) {
-                        ForEach(viewModel.selectedDateReadings) { reading in
-                            SensorReadingView(
-                                sensorData: reading,
-                                isHighlighted: false,
-                                isLandscapeCompact: isLandscape || isIPad
-                            )
-                            .opacity(0.8)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-            }
-        }
-    }
-
-    private func toggleDate(_ date: Date) {
-        if let current = expandedDate, isSameDay(current, date) {
-            expandedDate = nil
-        } else {
-            expandedDate = date
-            viewModel.loadReadings(for: date)
-        }
-    }
-
-    private func isSameDay(_ a: Date?, _ b: Date) -> Bool {
-        guard let a else { return false }
-        return Calendar.current.isDate(a, inSameDayAs: b)
-    }
-
+    
     private func formattedLogDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -399,35 +351,6 @@ struct HistoryView: View {
         if today { return base + "（本日）" }
         if yesterday { return base + "（昨日）" }
         return base
-    }
-    
-    private var emptyStateView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "sensor.tag.radiowaves.forward")
-                .font(.system(size: 40))
-                .foregroundColor(.secondary)
-            
-            Text("デバイスを検索中...")
-                .font(.headline)
-                .foregroundColor(.secondary)
-            
-            if !viewModel.isScanning && viewModel.bluetoothState == .poweredOn {
-                Button("スキャン開始") {
-                    viewModel.startScanning()
-                }
-                .buttonStyle(.borderedProminent)
-            }
-        }
-        .padding(.top, 20)
-    }
-    
-    private func updateOrientation() {
-        #if os(iOS)
-        let orientation = UIDevice.current.orientation
-        withAnimation(.easeInOut(duration: 0.3)) {
-            isLandscape = orientation.isLandscape
-        }
-        #endif
     }
 }
 
