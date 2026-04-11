@@ -12,15 +12,15 @@ struct ContentView: View {
                 ZStack {
                     HomeView(viewModel: sharedViewModel)
                     
-                    // Data received indicator positioned relative to toolbar
+                    // Data received indicator positioned at top-left
                     if sharedViewModel.showDataReceivedIndicator {
                         VStack {
                             HStack {
-                                Spacer()
                                 DataReceivedIndicator()
-                                    .padding(.trailing, 60) // 歯車アイコンの左に配置
+                                    .padding(.leading, 16)
+                                    .padding(.top, 8)
+                                Spacer()
                             }
-                            .padding(.top, -35) // ナビゲーションバーの高さに合わせて調整
                             Spacer()
                         }
                         .allowsHitTesting(false)
@@ -205,15 +205,15 @@ struct HistoryView: View {
                     }
                 }
                 
-                // Data received indicator（左端に表示）
+                // Data received indicator（左上に表示）
                 if viewModel.showDataReceivedIndicator {
                     VStack {
                         HStack {
                             DataReceivedIndicator()
                                 .padding(.leading, 16)
+                                .padding(.top, 8)
                             Spacer()
                         }
-                        .padding(.top, -35)
                         Spacer()
                     }
                     .allowsHitTesting(false)
