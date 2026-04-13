@@ -65,82 +65,94 @@ struct GraphView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            VStack {
-                // コントロールパネル
-                VStack(spacing: 12) {
-                    // データソース切り替え
-                    Picker("データソース", selection: $dataSourceType) {
-                        ForEach(DataSourceType.allCases, id: \.self) { type in
-                            Text(type.rawValue).tag(type)
+        GeometryReader { geometry in
+            NavigationStack {
+                VStack {
+                    // コントロールパネル
+                    VStack(spacing: 12) {
+                        // データソース切り替え
+                        Picker("データソース", selection: $dataSourceType) {
+                            ForEach(DataSourceType.allCases, id: \.self) { type in
+                                Text(type.rawValue).tag(type)
+                            }
                         }
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding(.horizontal)
-                    
-                    // 過去ログ選択時の日付ピッカー
-                    if dataSourceType == .pastLog {
-                        HStack {
-                            Text("日付:")
-                                .foregroundColor(.secondary)
-                            
-                            if viewModel.availableLogDates.isEmpty {
-                                Text("ログなし")
+                        .pickerStyle(SegmentedPickerStyle())
+                        .padding(.horizontal)
+                        
+                        // 過去ログ選択時の日付ピッカー
+                        if dataSourceType == .pastLog {
+                            HStack {
+                                Text("日付:")
                                     .foregroundColor(.secondary)
+                                
+                                if viewModel.availableLogDates.isEmpty {
+                                    Text("ログなし")
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    Picker("日付を選択", selection: $selectedLogDate) {
+                                        Text("選択してください").tag(Date?.none)
+                                        ForEach(viewModel.availableLogDates, id: \.self) { date in
+                                            Text(formattedLogDate(date)).tag(Date?.some(date))
+                                        }
+                                    }
+                                    .pickerStyle(MenuPickerStyle())
+                                    .onChange(of: selectedLogDate) { _, newDate in
+                                        if let date = newDate {
+                                            viewModel.loadReadings(for: date)
+                                        }
+                                    }
+                                }
+                                
+                                Spacer()
+                                
+                                if viewModel.isLoadingDate {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                }
+                            }
+                            .padding(.horizontal)
+                            .onAppear {
+                                // 過去ログタブを開いた時に初期選択を設定
+                                if selectedLogDate == nil, let firstDate = viewModel.availableLogDates.first {
+                                    selectedLogDate = firstDate
+                                    viewModel.loadReadings(for: firstDate)
+                                }
+                            }
+                        }
+                        
+                        // メトリクスとデバイスの切り替え
+                        HStack {
+                            if geometry.size.width > 400 {
+                                // 画面幅が広い場合（iPad, 横向き等）はセグメント（ラジオボタン風）
+                                Picker("表示データ", selection: $selectedMetric) {
+                                    ForEach(SensorMetric.allCases, id: \.self) { metric in
+                                        Text(metric.rawValue).tag(metric)
+                                    }
+                                }
+                                .pickerStyle(SegmentedPickerStyle())
                             } else {
-                                Picker("日付を選択", selection: $selectedLogDate) {
-                                    Text("選択してください").tag(Date?.none)
-                                    ForEach(viewModel.availableLogDates, id: \.self) { date in
-                                        Text(formattedLogDate(date)).tag(Date?.some(date))
+                                // 画面幅が狭い場合（iPhone縦持ち等）はメニュー
+                                Picker("表示データ", selection: $selectedMetric) {
+                                    ForEach(SensorMetric.allCases, id: \.self) { metric in
+                                        Text(metric.rawValue).tag(metric)
                                     }
                                 }
                                 .pickerStyle(MenuPickerStyle())
-                                .onChange(of: selectedLogDate) { _, newDate in
-                                    if let date = newDate {
-                                        viewModel.loadReadings(for: date)
-                                    }
-                                }
                             }
                             
                             Spacer()
                             
-                            if viewModel.isLoadingDate {
-                                ProgressView()
-                                    .scaleEffect(0.8)
+                            Picker("デバイス", selection: $selectedDeviceId) {
+                                Text("すべて").tag(UInt8?.none)
+                                ForEach(uniqueDeviceIds, id: \.self) { id in
+                                    Text("ID: \(id)").tag(UInt8?.some(id))
+                                }
                             }
+                            .pickerStyle(MenuPickerStyle())
                         }
                         .padding(.horizontal)
-                        .onAppear {
-                            // 過去ログタブを開いた時に初期選択を設定
-                            if selectedLogDate == nil, let firstDate = viewModel.availableLogDates.first {
-                                selectedLogDate = firstDate
-                                viewModel.loadReadings(for: firstDate)
-                            }
-                        }
                     }
-                    
-                    // メトリクスとデバイスの切り替え
-                    HStack {
-                        Picker("表示データ", selection: $selectedMetric) {
-                            ForEach(SensorMetric.allCases, id: \.self) { metric in
-                                Text(metric.rawValue).tag(metric)
-                            }
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                        
-                        Spacer()
-                        
-                        Picker("デバイス", selection: $selectedDeviceId) {
-                            Text("すべて").tag(UInt8?.none)
-                            ForEach(uniqueDeviceIds, id: \.self) { id in
-                                Text("ID: \(id)").tag(UInt8?.some(id))
-                            }
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                    }
-                    .padding(.horizontal)
-                }
-                .padding(.top, 10)
+                    .padding(.top, 10)
                 
                 Divider()
                 
@@ -163,13 +175,21 @@ struct GraphView: View {
                             .padding(.top, 8)
                         
                         Chart(chartData) { item in
+                            // 線を描画
                             LineMark(
                                 x: .value("時刻", item.timestamp),
                                 y: .value(selectedMetric.rawValue, valueFor(metric: selectedMetric, item: item))
                             )
-                            // デバイスごとに色分け
                             .foregroundStyle(by: .value("Device", "ID: \(item.deviceId)"))
                             .lineStyle(StrokeStyle(lineWidth: 2))
+                            
+                            // 計測点を丸で表示
+                            PointMark(
+                                x: .value("時刻", item.timestamp),
+                                y: .value(selectedMetric.rawValue, valueFor(metric: selectedMetric, item: item))
+                            )
+                            .foregroundStyle(by: .value("Device", "ID: \(item.deviceId)"))
+                            .symbolSize(20) // 丸のサイズ調整
                             
                             // 単一デバイス選択時はエリアを塗りつぶす（グラデーション）
                             if selectedDeviceId != nil {
@@ -190,6 +210,55 @@ struct GraphView: View {
                         }
                         // Y軸の値の範囲をメトリクスごとに調整
                         .chartYScale(domain: yAxisDomain(for: selectedMetric))
+                        // Y軸の目盛を調整
+                        .chartYAxis {
+                            switch selectedMetric {
+                            case .temperature:
+                                AxisMarks(values: Array(stride(from: -10, through: 50, by: 5))) { value in
+                                    if let number = value.as(Int.self) {
+                                        // 10度ごとに濃い線、それ以外は薄い線
+                                        let isMajor = number % 10 == 0
+                                        AxisGridLine(stroke: StrokeStyle(lineWidth: isMajor ? 1 : 0.5))
+                                            .foregroundStyle(isMajor ? Color.primary.opacity(0.3) : Color.primary.opacity(0.1))
+                                        AxisTick()
+                                        AxisValueLabel("\(number)")
+                                    }
+                                }
+                            case .pressure:
+                                AxisMarks(values: Array(stride(from: 860, through: 1150, by: 20))) { value in
+                                    if let number = value.as(Int.self) {
+                                        // 100hPaごとに濃い線
+                                        let isMajor = number % 100 == 0
+                                        AxisGridLine(stroke: StrokeStyle(lineWidth: isMajor ? 1 : 0.5))
+                                            .foregroundStyle(isMajor ? Color.primary.opacity(0.3) : Color.primary.opacity(0.1))
+                                        AxisTick()
+                                        AxisValueLabel("\(number)")
+                                    }
+                                }
+                            case .voltage:
+                                AxisMarks(values: Array(stride(from: 1.0, through: 4.5, by: 0.2))) { value in
+                                    if let number = value.as(Double.self) {
+                                        // 1.0Vごとに濃い線 (浮動小数点の誤差を考慮)
+                                        let isMajor = abs(number.remainder(dividingBy: 1.0)) < 0.01
+                                        AxisGridLine(stroke: StrokeStyle(lineWidth: isMajor ? 1 : 0.5))
+                                            .foregroundStyle(isMajor ? Color.primary.opacity(0.3) : Color.primary.opacity(0.1))
+                                        AxisTick()
+                                        AxisValueLabel(String(format: "%.1f", number))
+                                    }
+                                }
+                            case .humidity:
+                                AxisMarks(values: Array(stride(from: 0, through: 100, by: 10))) { value in
+                                    if let number = value.as(Int.self) {
+                                        // 50%ごとに濃い線、それ以外は薄い線
+                                        let isMajor = number % 50 == 0
+                                        AxisGridLine(stroke: StrokeStyle(lineWidth: isMajor ? 1 : 0.5))
+                                            .foregroundStyle(isMajor ? Color.primary.opacity(0.3) : Color.primary.opacity(0.1))
+                                        AxisTick()
+                                        AxisValueLabel("\(number)")
+                                    }
+                                }
+                            }
+                        }
                         // X軸の時刻フォーマット
                         .chartXAxis {
                             AxisMarks(values: .automatic(desiredCount: 5)) { value in
@@ -224,6 +293,7 @@ struct GraphView: View {
                     viewModel.startScanning()
                 }
             }
+        }
         }
     }
     
