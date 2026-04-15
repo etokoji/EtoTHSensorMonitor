@@ -18,6 +18,7 @@ struct GraphView: View {
         case temperature = "温度"
         case humidity = "湿度"
         case pressure = "気圧"
+        case illuminance = "照度"
         case voltage = "電圧"
         
         var unit: String {
@@ -25,6 +26,7 @@ struct GraphView: View {
             case .temperature: return "°C"
             case .humidity: return "%"
             case .pressure: return "hPa"
+            case .illuminance: return "lx"
             case .voltage: return "V"
             }
         }
@@ -34,6 +36,7 @@ struct GraphView: View {
             case .temperature: return .red
             case .humidity: return .blue
             case .pressure: return .orange
+            case .illuminance: return .yellow
             case .voltage: return .green
             }
         }
@@ -209,7 +212,7 @@ struct GraphView: View {
                             }
                         }
                         // Y軸の値の範囲をメトリクスごとに調整
-                        .chartYScale(domain: yAxisDomain(for: selectedMetric))
+                        .modifier(ChartYScaleModifier(metric: selectedMetric))
                         // Y軸の目盛を調整
                         .chartYAxis {
                             switch selectedMetric {
@@ -251,6 +254,16 @@ struct GraphView: View {
                                     if let number = value.as(Int.self) {
                                         // 50%ごとに濃い線、それ以外は薄い線
                                         let isMajor = number % 50 == 0
+                                        AxisGridLine(stroke: StrokeStyle(lineWidth: isMajor ? 1 : 0.5))
+                                            .foregroundStyle(isMajor ? Color.primary.opacity(0.3) : Color.primary.opacity(0.1))
+                                        AxisTick()
+                                        AxisValueLabel("\(number)")
+                                    }
+                                }
+                            case .illuminance:
+                                AxisMarks(values: [1, 10, 100, 1_000, 10_000, 54_000]) { value in
+                                    if let number = value.as(Int.self) {
+                                        let isMajor = (number == 1 || number == 10 || number == 100 || number == 1_000 || number == 10_000)
                                         AxisGridLine(stroke: StrokeStyle(lineWidth: isMajor ? 1 : 0.5))
                                             .foregroundStyle(isMajor ? Color.primary.opacity(0.3) : Color.primary.opacity(0.1))
                                         AxisTick()
@@ -303,6 +316,9 @@ struct GraphView: View {
         case .temperature: return item.temperatureCelsius
         case .humidity: return item.humidityPercent
         case .pressure: return item.pressureHPa
+        case .illuminance:
+            // 対数軸で0は扱えないので下限を1lxにする
+            return max(1.0, item.illuminanceLux ?? 0.0)
         case .voltage: return item.voltageVolts
         }
     }
@@ -314,7 +330,7 @@ struct GraphView: View {
     }
     
     // グラフのY軸の範囲をメトリクスごとに指定
-    private func yAxisDomain(for metric: SensorMetric) -> ClosedRange<Double> {
+    private static func yAxisDomain(for metric: SensorMetric) -> ClosedRange<Double> {
         switch metric {
         case .temperature:
             return -10...50
@@ -322,8 +338,27 @@ struct GraphView: View {
             return 0...100
         case .pressure:
             return 850...1150 // 1000±150
+        case .illuminance:
+            return 1...54_000
         case .voltage:
             return 1.0...4.5
+        }
+    }
+
+    private struct ChartYScaleModifier: ViewModifier {
+        let metric: SensorMetric
+
+        func body(content: Content) -> some View {
+            if metric == .illuminance {
+                if #available(iOS 17.0, macOS 14.0, *) {
+                    content.chartYScale(domain: 1...54_000, type: .log)
+                } else {
+                    // 古いOSでは線形軸にフォールバック
+                    content.chartYScale(domain: 1...54_000)
+                }
+            } else {
+                content.chartYScale(domain: GraphView.yAxisDomain(for: metric))
+            }
         }
     }
     

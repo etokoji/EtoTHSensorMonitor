@@ -4,8 +4,11 @@ import CoreBluetooth
 struct Constants {
     // ESP32 ENV payload constants
     static let envHeader = Data([0x45, 0x4E, 0x56]) // "ENV" in bytes
-    static let minPayloadLength = 14  // 3 + 1 + 2 + 2 + 2 + 2 + 2 = 14 bytes
+    // 旧フォーマット(照度なし): 3 + 1 + 2 + 2 + 2 + 2 + 2 = 14 bytes
+    // 新フォーマット(照度あり): 3 + 1 + 2 + 2 + 2 + 2 + 2 + 2 = 16 bytes
+    static let minPayloadLength = 14
     static let payloadWithCompanyIdLength = 16
+    static let payloadWithIlluminanceLength = 16
     
     // Data parsing offsets (new format with pressure)
     static let headerLength = 3
@@ -15,12 +18,14 @@ struct Constants {
     static let humidityOffset = 8     // hum(d% u2) - unsigned 16-bit
     static let pressureOffset = 10    // pres(Pa u2) - unsigned 16-bit
     static let voltageOffset = 12     // vdd(cV u2) - unsigned 16-bit
+    static let illuminanceOffset = 14 // lux(0.1 lx u2) - unsigned 16-bit (optional)
     
     // Unit conversion factors
     static let temperatureScale = 10.0  // 0.1°C units (deci-celsius)
     static let humidityScale = 10.0     // 0.1% units (deci-percent)
     static let pressureScale = 10.0     // 0.1 hPa units (deci-hectopascal)
     static let voltageScale = 100.0     // 0.01V units (centi-volt)
+    static let illuminanceScale = 1.0   // 1 lx units
     
     // Bluetooth scanning
     static let scanTimeout: TimeInterval = 0.3

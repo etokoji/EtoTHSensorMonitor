@@ -9,7 +9,7 @@ class BluetoothService: NSObject, ObservableObject {
     @Published var isInBackground = false
     
     private var centralManager: CBCentralManager!
-    private var lastSensorData: [String: (temperature: Double, humidity: Double, pressure: Double, voltage: Double)] = [:]
+    private var lastSensorData: [String: (temperature: Double, humidity: Double, pressure: Double, voltage: Double, illuminance: Double?)] = [:]
     private var wasScanningBeforeBackground = false
     
     /// バックグラウンド状態復元用の識別子
@@ -80,7 +80,7 @@ class BluetoothService: NSObject, ObservableObject {
         }
     }
     
-    private func decodeENVPayload(from data: Data) -> (deviceId: UInt8, readingId: UInt16, temperature: Double, humidity: Double, pressure: Double, voltage: Double)? {
+    private func decodeENVPayload(from data: Data) -> (deviceId: UInt8, readingId: UInt16, temperature: Double, humidity: Double, pressure: Double, voltage: Double, illuminance: Double?)? {
         // Check minimum length
         guard data.count >= Constants.minPayloadLength else { return nil }
         
@@ -100,7 +100,8 @@ class BluetoothService: NSObject, ObservableObject {
         guard data.count >= offset + Constants.minPayloadLength else { return nil }
         
         // Parse data (big-endian format)
-        // b'ENV' + dev_id(u1) + r_id(u2) + temp(dC i2) + hum(d% u2) + pres(dhPa u2) + vdd(cV u2)
+        // 旧: b'ENV' + dev_id(u1) + r_id(u2) + temp(dC i2) + hum(d% u2) + pres(dhPa u2) + vdd(cV u2)
+        // 新: 末尾に lux(dlx u2) を追加（0.1 lx 単位）
         let deviceId = data[offset + Constants.deviceIdOffset]
         
         let readingId = UInt16(data[offset + Constants.readingIdOffset]) << 8 |
@@ -125,8 +126,16 @@ class BluetoothService: NSObject, ObservableObject {
         let voltageRaw = UInt16(data[offset + Constants.voltageOffset]) << 8 |
                         UInt16(data[offset + Constants.voltageOffset + 1])
         let voltage = Double(voltageRaw) / Constants.voltageScale
+
+        // Illuminance is optional unsigned 16-bit (1 lx)
+        var illuminance: Double? = nil
+        if data.count >= offset + Constants.payloadWithIlluminanceLength {
+            let luxRaw = UInt16(data[offset + Constants.illuminanceOffset]) << 8 |
+                        UInt16(data[offset + Constants.illuminanceOffset + 1])
+            illuminance = Double(luxRaw) / Constants.illuminanceScale
+        }
         
-        return (deviceId, readingId, temperature, humidity, pressure, voltage)
+        return (deviceId, readingId, temperature, humidity, pressure, voltage, illuminance)
     }
 }
 
@@ -193,12 +202,14 @@ extension BluetoothService: CBCentralManagerDelegate {
                 abs(lastData.temperature - decoded.temperature) < 0.01 &&
                 abs(lastData.humidity - decoded.humidity) < 0.01 &&
                 abs(lastData.pressure - decoded.pressure) < 0.01 &&
-                abs(lastData.voltage - decoded.voltage) < 0.001
+                abs(lastData.voltage - decoded.voltage) < 0.001 &&
+                (lastData.illuminance == nil && decoded.illuminance == nil ||
+                 abs((lastData.illuminance ?? 0.0) - (decoded.illuminance ?? 0.0)) < 0.01)
             } else {
                 false
             }
             
-            lastSensorData[deviceAddress] = (decoded.temperature, decoded.humidity, decoded.pressure, decoded.voltage)
+            lastSensorData[deviceAddress] = (decoded.temperature, decoded.humidity, decoded.pressure, decoded.voltage, decoded.illuminance)
             
             let sensorData = SensorData(
                 deviceAddress: deviceAddress,
@@ -209,7 +220,8 @@ extension BluetoothService: CBCentralManagerDelegate {
                 temperatureCelsius: decoded.temperature,
                 humidityPercent: decoded.humidity,
                 pressureHPa: decoded.pressure,
-                voltageVolts: decoded.voltage
+                voltageVolts: decoded.voltage,
+                illuminanceLux: decoded.illuminance
             )
             
             DispatchQueue.main.async {
@@ -228,7 +240,11 @@ extension BluetoothService: CBCentralManagerDelegate {
                 }
             }
             
-            print("📃 Device: \(decoded.deviceId), Reading: \(decoded.readingId), Temp: \(decoded.temperature)°C, Humidity: \(decoded.humidity)%, Pressure: \(decoded.pressure)hPa, Voltage: \(decoded.voltage)V, RSSI: \(RSSI)")
+            if let lux = decoded.illuminance {
+                print("📃 Device: \(decoded.deviceId), Reading: \(decoded.readingId), Temp: \(decoded.temperature)°C, Humidity: \(decoded.humidity)%, Pressure: \(decoded.pressure)hPa, Voltage: \(decoded.voltage)V, Lux: \(lux)lx, RSSI: \(RSSI)")
+            } else {
+                print("📃 Device: \(decoded.deviceId), Reading: \(decoded.readingId), Temp: \(decoded.temperature)°C, Humidity: \(decoded.humidity)%, Pressure: \(decoded.pressure)hPa, Voltage: \(decoded.voltage)V, RSSI: \(RSSI)")
+            }
         }
     }
 }

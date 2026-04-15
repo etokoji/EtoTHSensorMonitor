@@ -123,11 +123,24 @@ struct HomeView: View {
                                         isCompactDevice: isCompactDeviceDynamic
                                     )
                                 }
+
+                                HStack(spacing: isCompactDeviceDynamic ? 15 : (isLargeScreenDynamic ? 25 : (isLandscape ? 12 : 20))) {
+                                    SensorCard(
+                                        title: "照度",
+                                        value: data.formattedIlluminance,
+                                        icon: "sun.max",
+                                        color: .yellow,
+                                        isCompact: false,
+                                        isLargeScreen: isLargeScreenDynamic,
+                                        isCompactDevice: isCompactDeviceDynamic
+                                    )
+                                    Spacer()
+                                }
                             }
                             // 最大幅制限を削除し、ウィンドウ幅に比例してカードが拡がる
                         } else {
                             // Portrait: vertical stack
-                            VStack(spacing: 30) {
+                            VStack(spacing: 14) {
                                 SensorCard(
                                     title: "温度",
                                     value: data.formattedTemperature,
@@ -147,6 +160,13 @@ struct HomeView: View {
                                     value: data.formattedPressure,
                                     icon: "barometer",
                                     color: .orange
+                                )
+
+                                SensorCard(
+                                    title: "照度",
+                                    value: data.formattedIlluminance,
+                                    icon: "sun.max",
+                                    color: .yellow
                                 )
                                 
                                 SensorCard(

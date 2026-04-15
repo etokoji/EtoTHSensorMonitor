@@ -128,6 +128,7 @@ class SensorViewModel: ObservableObject {
                 humidityPercent: firstReading.humidityPercent,
                 pressureHPa: firstReading.pressureHPa,
                 voltageVolts: firstReading.voltageVolts,
+                illuminanceLux: firstReading.illuminanceLux,
                 groupedCount: firstReading.groupedCount + 1
             )
             

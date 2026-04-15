@@ -87,6 +87,15 @@ struct CompactSensorCard: View {
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
+
+                VStack(alignment: .center, spacing: 2) {
+                    Text(sensorData.formattedIlluminance)
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundColor(.yellow)
+                    Text("照度")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
             }
         }
         .padding(.horizontal, 12)
@@ -111,7 +120,8 @@ struct CompactSensorCard: View {
                 temperatureCelsius: 23.5,
                 humidityPercent: 65.2,
                 pressureHPa: 1013.2,
-                voltageVolts: 3.7
+                voltageVolts: 3.7,
+                illuminanceLux: 123.4
             )
         )
         
@@ -126,7 +136,8 @@ struct CompactSensorCard: View {
                 temperatureCelsius: 25.1,
                 humidityPercent: 58.9,
                 pressureHPa: 1015.8,
-                voltageVolts: 3.6
+                voltageVolts: 3.6,
+                illuminanceLux: nil
             )
         )
     }

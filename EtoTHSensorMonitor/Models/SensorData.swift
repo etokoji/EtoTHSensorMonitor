@@ -12,12 +12,13 @@ struct SensorData: Identifiable, Codable {
     let humidityPercent: Double
     let pressureHPa: Double
     let voltageVolts: Double
+    let illuminanceLux: Double?
     let groupedCount: Int // グループ化された件数
     
     // アニメーション用プロパティ（永続化しない）
     private enum CodingKeys: String, CodingKey {
         case id, timestamp, deviceAddress, deviceName, rssi
-        case deviceId, readingId, temperatureCelsius, humidityPercent, pressureHPa, voltageVolts
+        case deviceId, readingId, temperatureCelsius, humidityPercent, pressureHPa, voltageVolts, illuminanceLux
         case groupedCount
     }
     
@@ -31,6 +32,7 @@ struct SensorData: Identifiable, Codable {
          humidityPercent: Double,
          pressureHPa: Double,
          voltageVolts: Double,
+         illuminanceLux: Double? = nil,
          groupedCount: Int = 1) {
         self.timestamp = timestamp
         self.deviceAddress = deviceAddress
@@ -42,6 +44,7 @@ struct SensorData: Identifiable, Codable {
         self.humidityPercent = humidityPercent
         self.pressureHPa = pressureHPa
         self.voltageVolts = voltageVolts
+        self.illuminanceLux = illuminanceLux
         self.groupedCount = groupedCount
     }
     
@@ -60,6 +63,13 @@ struct SensorData: Identifiable, Codable {
     
     var formattedVoltage: String {
         String(format: "%.2fV", voltageVolts)
+    }
+
+    var formattedIlluminance: String {
+        if let lux = illuminanceLux {
+            return String(format: "%.1f lx", lux)
+        }
+        return "—"
     }
     
     var formattedTimestamp: String {

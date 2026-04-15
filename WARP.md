@@ -85,6 +85,30 @@ Key characteristics:
 - Supports both manufacturer data and service data locations
 - Implements data change detection to prevent duplicate processing
 
+<!--
+UNCOMMITTED CHANGES SUMMARY (TEMP NOTE)
+
+- Scope: Add optional illuminance (Lux) support end-to-end (model → BLE decode → UI/Widget → graph)
+- Files: 10 files changed (+139 / -17), no staged changes at the time of writing
+
+- Model:
+  - SensorData: add `illuminanceLux: Double?` and `formattedIlluminance`
+
+- BLE / Protocol:
+  - BluetoothService + Constants: support extended ENV payload with optional illuminance (u16 at tail)
+  - Deduplication now also considers illuminance when present
+
+- UI:
+  - Add illuminance card/values in HomeView / SensorReadingView / CompactSensorCard
+  - GraphView: add illuminance metric; use log Y-scale for illuminance (fallback to linear on older OS)
+
+- Widget:
+  - Widget data + UI: add `illuminanceLux` and display row
+
+- Xcode project:
+  - Widget deployment target changed from 26.4 to 17.0
+-->
+
 #### TCPService
 - Connects to configurable server IP on port 8080
 - Handles JSON-formatted sensor data with automatic parsing

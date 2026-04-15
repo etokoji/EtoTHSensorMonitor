@@ -69,6 +69,12 @@ struct SensorReadingView: View {
                             value: sensorData.formattedPressure,
                             color: pressureColor
                         )
+
+                        CompactSensorValue(
+                            title: "照",
+                            value: sensorData.formattedIlluminance,
+                            color: .yellow
+                        )
                     }
                     
                     Spacer()
@@ -169,6 +175,12 @@ struct SensorReadingView: View {
                             title: "気圧",
                             value: sensorData.formattedPressure,
                             color: pressureColor
+                        )
+
+                        CompactSensorValue(
+                            title: "照度",
+                            value: sensorData.formattedIlluminance,
+                            color: .yellow
                         )
                         
                         Spacer()
@@ -362,6 +374,7 @@ struct SensorValueView: View {
                 humidityPercent: 65.2,
                 pressureHPa: 1013.2,
                 voltageVolts: 3.45,
+                illuminanceLux: 456.7,
                 groupedCount: 1
             ),
             isHighlighted: false
@@ -378,6 +391,7 @@ struct SensorValueView: View {
                 humidityPercent: 58.3,
                 pressureHPa: 1025.0,
                 voltageVolts: 3.67,
+                illuminanceLux: nil,
                 groupedCount: 3
             ),
             isHighlighted: true

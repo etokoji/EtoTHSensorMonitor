@@ -16,12 +16,17 @@ struct WidgetSensorData: Codable {
     let humidityPercent: Double
     let pressureHPa: Double
     let voltageVolts: Double
+    let illuminanceLux: Double?
     let groupedCount: Int
 
     var formattedTemperature: String { String(format: "%.1f°C", temperatureCelsius) }
     var formattedHumidity: String    { String(format: "%.1f%%", humidityPercent) }
     var formattedPressure: String    { String(format: "%.1f hPa", pressureHPa) }
     var formattedVoltage: String     { String(format: "%.2fV", voltageVolts) }
+    var formattedIlluminance: String {
+        if let lux = illuminanceLux { return String(format: "%.1f lx", lux) }
+        return "—"
+    }
     var formattedTimestamp: String {
         let f = DateFormatter()
         f.dateStyle = .short
@@ -71,6 +76,7 @@ struct SensorWidgetProvider: TimelineProvider {
                 humidityPercent: 55.0,
                 pressureHPa: 1013.2,
                 voltageVolts: 3.7,
+                illuminanceLux: 456.7,
                 groupedCount: 1
             )
         )
@@ -216,6 +222,8 @@ struct SensorWidgetEntryView: View {
                          value: data.formattedPressure, color: .orange)
                 ValueRow(icon: "battery.100", label: "電圧",
                          value: data.formattedVoltage, color: .green)
+                ValueRow(icon: "sun.max", label: "照度",
+                         value: data.formattedIlluminance, color: .yellow)
             }
         }
         .padding(12)
@@ -247,6 +255,8 @@ struct SensorWidgetEntryView: View {
                                 value: data.formattedPressure, color: .orange)
                 LargeSensorCard(icon: "battery.100", label: "電圧",
                                 value: data.formattedVoltage, color: .green)
+                LargeSensorCard(icon: "sun.max", label: "照度",
+                                value: data.formattedIlluminance, color: .yellow)
             }
 
             Spacer()
