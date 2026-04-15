@@ -43,6 +43,14 @@ class SensorViewModel: ObservableObject {
     }
     
     private func setupBindings() {
+        // ログファイルが新規作成されたら日付リストを更新
+        NotificationCenter.default.publisher(for: ReadingLogManager.didCreateNewLogFileNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.loadAvailableDates()
+            }
+            .store(in: &cancellables)
+
         // Bind scanning state
         dataService.$isBluetoothScanning
             .receive(on: DispatchQueue.main)

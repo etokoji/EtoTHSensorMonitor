@@ -3,10 +3,23 @@ import Foundation
 /// センサーデータをJSON Lines形式でファイルに保存・読み込みするクラス
 class ReadingLogManager {
     static let shared = ReadingLogManager()
+    
+    static let didCreateNewLogFileNotification = Notification.Name("ReadingLogManager.didCreateNewLogFile")
+    static let notificationKeyLogFileURL = "logFileURL"
 
     private let fileManager = FileManager.default
     private let maxDaysToKeep = 30
     private let maxEntriesPerFile = 2000
+    
+    // yyyy-MM-dd は固定フォーマットなので locale/timeZone を固定して扱う
+    private static let fileDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.calendar = Calendar(identifier: .gregorian)
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = .autoupdatingCurrent
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
 
     // ログファイルを格納するディレクトリ
     private var logsDirectory: URL {
@@ -22,23 +35,35 @@ class ReadingLogManager {
     // MARK: - 書き込み
 
     /// センサーデータをその日のログファイルに追記する
-    func append(_ reading: SensorData) {
-        let url = logFileURL(for: reading.timestamp)
+    /// - Note: ファイルの「日付」は受信時刻（端末ローカル）で切り替える。
+    ///         センサ側時刻が未設定/固定でも日付跨ぎで確実に新ファイルへ切り替わるようにする。
+    func append(_ reading: SensorData, receivedAt: Date = Date()) {
+        createLogsDirectoryIfNeeded()
+        let url = logFileURL(for: receivedAt)
+        let existedBeforeWrite = fileManager.fileExists(atPath: url.path)
         guard let line = encode(reading) else { return }
         let lineWithNewline = line + "\n"
 
-        if fileManager.fileExists(atPath: url.path) {
-            // ファイルが既にある場合は追記
-            if let handle = try? FileHandle(forWritingTo: url) {
-                handle.seekToEndOfFile()
+        do {
+            if existedBeforeWrite {
+                // ファイルが既にある場合は追記
+                let handle = try FileHandle(forWritingTo: url)
+                defer { try? handle.close() }
+                try handle.seekToEnd()
                 if let data = lineWithNewline.data(using: .utf8) {
-                    handle.write(data)
+                    try handle.write(contentsOf: data)
                 }
-                handle.closeFile()
+            } else {
+                // 新しいファイルを作成
+                try lineWithNewline.write(to: url, atomically: true, encoding: .utf8)
+                NotificationCenter.default.post(
+                    name: Self.didCreateNewLogFileNotification,
+                    object: nil,
+                    userInfo: [Self.notificationKeyLogFileURL: url]
+                )
             }
-        } else {
-            // 新しいファイルを作成
-            try? lineWithNewline.write(to: url, atomically: true, encoding: .utf8)
+        } catch {
+            print("❌ Failed to append log: \(error) url=\(url.lastPathComponent)")
         }
     }
 
@@ -106,9 +131,8 @@ class ReadingLogManager {
     }
 
     private func logFileURL(for date: Date) -> URL {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        let name = "sensor_log_\(formatter.string(from: date)).jsonl"
+        let day = Calendar.autoupdatingCurrent.startOfDay(for: date)
+        let name = "sensor_log_\(Self.fileDateFormatter.string(from: day)).jsonl"
         return logsDirectory.appendingPathComponent(name)
     }
 
@@ -117,9 +141,7 @@ class ReadingLogManager {
         // "sensor_log_yyyy-MM-dd" 形式
         guard name.hasPrefix("sensor_log_") else { return nil }
         let dateStr = String(name.dropFirst("sensor_log_".count))
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.date(from: dateStr)
+        return Self.fileDateFormatter.date(from: dateStr)
     }
 
     private func loadReadings(from url: URL) -> [SensorData] {
