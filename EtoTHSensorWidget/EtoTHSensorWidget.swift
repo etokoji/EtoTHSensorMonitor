@@ -1,5 +1,8 @@
 import WidgetKit
 import SwiftUI
+#if os(macOS)
+import AppKit
+#endif
 
 // MARK: - Shared Models (widgetとメインアプリで共通利用)
 
@@ -106,10 +109,20 @@ struct SensorWidgetEntryView: View {
     var body: some View {
         if #available(iOS 17.0, macOS 14.0, *) {
             mainContent
-                .containerBackground(for: .widget) { Color(.systemBackground) }
+                .containerBackground(for: .widget) { widgetBackground }
         } else {
             mainContent
         }
+    }
+    
+    private var widgetBackground: Color {
+        #if os(iOS)
+        return Color(.systemBackground)
+        #elseif os(macOS)
+        return Color(nsColor: .windowBackgroundColor)
+        #else
+        return Color.clear
+        #endif
     }
 
     @ViewBuilder
@@ -387,13 +400,25 @@ struct EtoTHSensorWidget: Widget {
         }
         .configurationDisplayName("センサーモニター")
         .description("ESP32センサーの最新データを表示")
-        .supportedFamilies([
+        .supportedFamilies(supportedFamilies)
+    }
+    
+    private var supportedFamilies: [WidgetFamily] {
+        #if os(iOS)
+        return [
             .systemSmall,
             .systemMedium,
             .systemLarge,
             .accessoryCircular,
             .accessoryRectangular,
             .accessoryInline
-        ])
+        ]
+        #else
+        return [
+            .systemSmall,
+            .systemMedium,
+            .systemLarge
+        ]
+        #endif
     }
 }
