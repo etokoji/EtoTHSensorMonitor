@@ -8,6 +8,20 @@ struct GraphView: View {
     @State private var selectedLogDate: Date? = nil
     @State private var selectedMetric: SensorMetric = .temperature
     @State private var selectedDeviceId: UInt8? = nil // nil = すべて
+
+    init(
+        viewModel: SensorViewModel,
+        initialDataSourceType: DataSourceType = .currentSession,
+        initialLogDate: Date? = nil,
+        initialMetric: SensorMetric = .temperature,
+        initialDeviceId: UInt8? = nil
+    ) {
+        self.viewModel = viewModel
+        _dataSourceType = State(initialValue: initialDataSourceType)
+        _selectedLogDate = State(initialValue: initialLogDate)
+        _selectedMetric = State(initialValue: initialMetric)
+        _selectedDeviceId = State(initialValue: initialDeviceId)
+    }
     
     enum DataSourceType: String, CaseIterable {
         case currentSession = "直近セッション"

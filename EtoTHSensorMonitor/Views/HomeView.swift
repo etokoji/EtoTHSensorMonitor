@@ -81,59 +81,74 @@ struct HomeView: View {
                             // Landscape, large screen, or compact device: 2x2 grid with maximum width
                             VStack(spacing: isCompactDeviceDynamic ? 15 : (isLargeScreenDynamic ? 25 : (isLandscape ? 10 : 20))) {
                                 HStack(spacing: isCompactDeviceDynamic ? 15 : (isLargeScreenDynamic ? 25 : (isLandscape ? 12 : 20))) {
-                                    SensorCard(
-                                        title: "温度",
-                                        value: data.formattedTemperature,
-                                        icon: "thermometer",
-                                        color: .red,
-                                        isCompact: false,
-                                        isLargeScreen: isLargeScreenDynamic,
-                                        isCompactDevice: isCompactDeviceDynamic
-                                    )
+                                    ZStack(alignment: .topTrailing) {
+                                        SensorCard(
+                                            title: "温度",
+                                            value: data.formattedTemperature,
+                                            icon: "thermometer",
+                                            color: .red,
+                                            isCompact: false,
+                                            isLargeScreen: isLargeScreenDynamic,
+                                            isCompactDevice: isCompactDeviceDynamic
+                                        )
+                                        graphLinkButton(metric: .temperature)
+                                    }
                                     
-                                    SensorCard(
-                                        title: "湿度",
-                                        value: data.formattedHumidity,
-                                        icon: "humidity",
-                                        color: .blue,
-                                        isCompact: false,
-                                        isLargeScreen: isLargeScreenDynamic,
-                                        isCompactDevice: isCompactDeviceDynamic
-                                    )
+                                    ZStack(alignment: .topTrailing) {
+                                        SensorCard(
+                                            title: "湿度",
+                                            value: data.formattedHumidity,
+                                            icon: "humidity",
+                                            color: .blue,
+                                            isCompact: false,
+                                            isLargeScreen: isLargeScreenDynamic,
+                                            isCompactDevice: isCompactDeviceDynamic
+                                        )
+                                        graphLinkButton(metric: .humidity)
+                                    }
                                 }
                                 
                                 HStack(spacing: isCompactDeviceDynamic ? 15 : (isLargeScreenDynamic ? 25 : (isLandscape ? 12 : 20))) {
-                                    SensorCard(
-                                        title: "気圧",
-                                        value: data.formattedPressure,
-                                        icon: "barometer",
-                                        color: .orange,
-                                        isCompact: false,
-                                        isLargeScreen: isLargeScreenDynamic,
-                                        isCompactDevice: isCompactDeviceDynamic
-                                    )
+                                    ZStack(alignment: .topTrailing) {
+                                        SensorCard(
+                                            title: "気圧",
+                                            value: data.formattedPressure,
+                                            icon: "barometer",
+                                            color: .orange,
+                                            isCompact: false,
+                                            isLargeScreen: isLargeScreenDynamic,
+                                            isCompactDevice: isCompactDeviceDynamic
+                                        )
+                                        graphLinkButton(metric: .pressure)
+                                    }
                                     
-                                    SensorCard(
-                                        title: "電圧",
-                                        value: data.formattedVoltage,
-                                        icon: "battery.100",
-                                        color: .green,
-                                        isCompact: false,
-                                        isLargeScreen: isLargeScreenDynamic,
-                                        isCompactDevice: isCompactDeviceDynamic
-                                    )
+                                    ZStack(alignment: .topTrailing) {
+                                        SensorCard(
+                                            title: "電圧",
+                                            value: data.formattedVoltage,
+                                            icon: "battery.100",
+                                            color: .green,
+                                            isCompact: false,
+                                            isLargeScreen: isLargeScreenDynamic,
+                                            isCompactDevice: isCompactDeviceDynamic
+                                        )
+                                        graphLinkButton(metric: .voltage)
+                                    }
                                 }
 
                                 HStack(spacing: isCompactDeviceDynamic ? 15 : (isLargeScreenDynamic ? 25 : (isLandscape ? 12 : 20))) {
-                                    SensorCard(
-                                        title: "照度",
-                                        value: data.formattedIlluminance,
-                                        icon: "sun.max",
-                                        color: .yellow,
-                                        isCompact: false,
-                                        isLargeScreen: isLargeScreenDynamic,
-                                        isCompactDevice: isCompactDeviceDynamic
-                                    )
+                                    ZStack(alignment: .topTrailing) {
+                                        SensorCard(
+                                            title: "照度",
+                                            value: data.formattedIlluminance,
+                                            icon: "sun.max",
+                                            color: .yellow,
+                                            isCompact: false,
+                                            isLargeScreen: isLargeScreenDynamic,
+                                            isCompactDevice: isCompactDeviceDynamic
+                                        )
+                                        graphLinkButton(metric: .illuminance)
+                                    }
                                     Spacer()
                                 }
                             }
@@ -141,40 +156,55 @@ struct HomeView: View {
                         } else {
                             // Portrait: vertical stack
                             VStack(spacing: 14) {
-                                SensorCard(
-                                    title: "温度",
-                                    value: data.formattedTemperature,
-                                    icon: "thermometer",
-                                    color: .red
-                                )
+                                ZStack(alignment: .topTrailing) {
+                                    SensorCard(
+                                        title: "温度",
+                                        value: data.formattedTemperature,
+                                        icon: "thermometer",
+                                        color: .red
+                                    )
+                                    graphLinkButton(metric: .temperature)
+                                }
                                 
-                                SensorCard(
-                                    title: "湿度",
-                                    value: data.formattedHumidity,
-                                    icon: "humidity",
-                                    color: .blue
-                                )
+                                ZStack(alignment: .topTrailing) {
+                                    SensorCard(
+                                        title: "湿度",
+                                        value: data.formattedHumidity,
+                                        icon: "humidity",
+                                        color: .blue
+                                    )
+                                    graphLinkButton(metric: .humidity)
+                                }
                                 
-                                SensorCard(
-                                    title: "気圧",
-                                    value: data.formattedPressure,
-                                    icon: "barometer",
-                                    color: .orange
-                                )
+                                ZStack(alignment: .topTrailing) {
+                                    SensorCard(
+                                        title: "気圧",
+                                        value: data.formattedPressure,
+                                        icon: "barometer",
+                                        color: .orange
+                                    )
+                                    graphLinkButton(metric: .pressure)
+                                }
 
-                                SensorCard(
-                                    title: "照度",
-                                    value: data.formattedIlluminance,
-                                    icon: "sun.max",
-                                    color: .yellow
-                                )
+                                ZStack(alignment: .topTrailing) {
+                                    SensorCard(
+                                        title: "照度",
+                                        value: data.formattedIlluminance,
+                                        icon: "sun.max",
+                                        color: .yellow
+                                    )
+                                    graphLinkButton(metric: .illuminance)
+                                }
                                 
-                                SensorCard(
-                                    title: "電圧",
-                                    value: data.formattedVoltage,
-                                    icon: "battery.100",
-                                    color: .green
-                                )
+                                ZStack(alignment: .topTrailing) {
+                                    SensorCard(
+                                        title: "電圧",
+                                        value: data.formattedVoltage,
+                                        icon: "battery.100",
+                                        color: .green
+                                    )
+                                    graphLinkButton(metric: .voltage)
+                                }
                             }
                         }
                     } else {
@@ -257,6 +287,24 @@ struct HomeView: View {
         formatter.timeStyle = .medium
         formatter.timeZone = TimeZone.current // 現在のタイムゾーンを使用
         return formatter.string(from: date)
+    }
+    
+    @ViewBuilder
+    private func graphLinkButton(metric: GraphView.SensorMetric) -> some View {
+        NavigationLink {
+            GraphView(viewModel: viewModel, initialDataSourceType: .currentSession, initialMetric: metric)
+        } label: {
+            Image(systemName: "chart.xyaxis.line")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+                .padding(8)
+                .background(.thinMaterial)
+                .clipShape(Circle())
+                .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 1)
+        }
+        .buttonStyle(.plain)
+        .padding(10)
+        .accessibilityLabel("グラフを開く")
     }
 }
 
