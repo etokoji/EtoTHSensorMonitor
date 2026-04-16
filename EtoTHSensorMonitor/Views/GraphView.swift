@@ -8,6 +8,7 @@ struct GraphView: View {
     @State private var selectedLogDate: Date? = nil
     @State private var selectedMetric: SensorMetric = .temperature
     @State private var selectedDeviceId: UInt8? = nil // nil = すべて
+    @State private var illuminanceLogScaleEnabled: Bool = true
 
     init(
         viewModel: SensorViewModel,
@@ -186,10 +187,24 @@ struct GraphView: View {
                     Spacer()
                 } else {
                     VStack(alignment: .leading) {
-                        Text("\(selectedMetric.rawValue) (\(selectedMetric.unit))")
-                            .font(.headline)
-                            .padding(.horizontal)
-                            .padding(.top, 8)
+                        HStack(alignment: .center, spacing: 12) {
+                            Text("\(selectedMetric.rawValue) (\(selectedMetric.unit))")
+                                .font(.headline)
+                            
+                            Spacer()
+                            
+                            if selectedMetric == .illuminance {
+                                Toggle(isOn: $illuminanceLogScaleEnabled) {
+                                    Text("対数")
+                                }
+                                .toggleStyle(.switch)
+                                .labelsHidden()
+                                .disabled(!supportsIlluminanceLogScale)
+                                .accessibilityLabel("照度の縦軸を対数にする")
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
                         
                         Chart(chartData) { item in
                             // 線を描画
@@ -226,7 +241,7 @@ struct GraphView: View {
                             }
                         }
                         // Y軸の値の範囲をメトリクスごとに調整
-                        .modifier(ChartYScaleModifier(metric: selectedMetric))
+                        .modifier(ChartYScaleModifier(metric: selectedMetric, illuminanceLogScaleEnabled: illuminanceLogScaleEnabled && supportsIlluminanceLogScale))
                         // Y軸の目盛を調整
                         .chartYAxis {
                             switch selectedMetric {
@@ -275,13 +290,25 @@ struct GraphView: View {
                                     }
                                 }
                             case .illuminance:
-                                AxisMarks(values: [1, 10, 100, 1_000, 10_000, 54_000]) { value in
-                                    if let number = value.as(Int.self) {
-                                        let isMajor = (number == 1 || number == 10 || number == 100 || number == 1_000 || number == 10_000)
-                                        AxisGridLine(stroke: StrokeStyle(lineWidth: isMajor ? 1 : 0.5))
-                                            .foregroundStyle(isMajor ? Color.primary.opacity(0.3) : Color.primary.opacity(0.1))
-                                        AxisTick()
-                                        AxisValueLabel("\(number)")
+                                if illuminanceLogScaleEnabled && supportsIlluminanceLogScale {
+                                    AxisMarks(values: [1, 10, 100, 1_000, 10_000, 54_000]) { value in
+                                        if let number = value.as(Int.self) {
+                                            let isMajor = (number == 1 || number == 10 || number == 100 || number == 1_000 || number == 10_000)
+                                            AxisGridLine(stroke: StrokeStyle(lineWidth: isMajor ? 1 : 0.5))
+                                                .foregroundStyle(isMajor ? Color.primary.opacity(0.3) : Color.primary.opacity(0.1))
+                                            AxisTick()
+                                            AxisValueLabel("\(number)")
+                                        }
+                                    }
+                                } else {
+                                    AxisMarks(values: [0, 10_000, 20_000, 30_000, 40_000, 54_000]) { value in
+                                        if let number = value.as(Int.self) {
+                                            let isMajor = (number % 20_000 == 0)
+                                            AxisGridLine(stroke: StrokeStyle(lineWidth: isMajor ? 1 : 0.5))
+                                                .foregroundStyle(isMajor ? Color.primary.opacity(0.3) : Color.primary.opacity(0.1))
+                                            AxisTick()
+                                            AxisValueLabel("\(number)")
+                                        }
                                     }
                                 }
                             }
@@ -331,8 +358,11 @@ struct GraphView: View {
         case .humidity: return item.humidityPercent
         case .pressure: return item.pressureHPa
         case .illuminance:
-            // 対数軸で0は扱えないので下限を1lxにする
-            return max(1.0, item.illuminanceLux ?? 0.0)
+            // 対数軸で0は扱えないので、対数時のみ下限を1lxにする
+            if illuminanceLogScaleEnabled && supportsIlluminanceLogScale {
+                return max(1.0, item.illuminanceLux ?? 0.0)
+            }
+            return item.illuminanceLux ?? 0.0
         case .voltage: return item.voltageVolts
         }
     }
@@ -359,16 +389,27 @@ struct GraphView: View {
         }
     }
 
+    private var supportsIlluminanceLogScale: Bool {
+        if #available(iOS 17.0, macOS 14.0, *) {
+            return true
+        }
+        return false
+    }
+
     private struct ChartYScaleModifier: ViewModifier {
         let metric: SensorMetric
+        let illuminanceLogScaleEnabled: Bool
 
         func body(content: Content) -> some View {
             if metric == .illuminance {
-                if #available(iOS 17.0, macOS 14.0, *) {
-                    content.chartYScale(domain: 1...54_000, type: .log)
+                if illuminanceLogScaleEnabled {
+                    if #available(iOS 17.0, macOS 14.0, *) {
+                        content.chartYScale(domain: 1...54_000, type: .log)
+                    } else {
+                        content.chartYScale(domain: 1...54_000)
+                    }
                 } else {
-                    // 古いOSでは線形軸にフォールバック
-                    content.chartYScale(domain: 1...54_000)
+                    content.chartYScale(domain: 0...54_000)
                 }
             } else {
                 content.chartYScale(domain: GraphView.yAxisDomain(for: metric))
