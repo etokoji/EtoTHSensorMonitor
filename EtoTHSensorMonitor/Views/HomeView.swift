@@ -43,8 +43,25 @@ struct HomeView: View {
         // Background gradient with dynamic sizing
         GeometryReader { geometry in
             let screenWidth = geometry.size.width
+            let topSafeInset = geometry.safeAreaInsets.top
             let isLargeScreenDynamic = isLargeScreen(width: screenWidth)
             let isCompactDeviceDynamic = isCompactDevice(width: screenWidth)
+            let isPortraitStack = !(isLandscape || isLargeScreenDynamic || isCompactDeviceDynamic)
+            #if canImport(UIKit)
+            let isPhone = UIDevice.current.userInterfaceIdiom == .phone
+            #else
+            let isPhone = false
+            #endif
+            #if os(macOS)
+            let isMac = true
+            #else
+            let isMac = false
+            #endif
+            
+            // macOSはウィンドウタイトルバー等でsafeAreaInsets.topが大きくなりやすいので控えめにする
+            let effectiveTopInset = isPortraitStack ? (isMac ? min(8, topSafeInset * 0.25) : topSafeInset) : 0
+            // iPhone縦長表示では、カードがナビバーにかからないよう全体を少し上に持ち上げる
+            let portraitLift: CGFloat = (isPhone && isPortraitStack) ? 28 : 0
             
             LinearGradient(
                 gradient: Gradient(colors: [Color.blue.opacity(0.1), Color.green.opacity(0.1)]),
@@ -53,7 +70,8 @@ struct HomeView: View {
             )
             .ignoresSafeArea()
             .overlay(
-                VStack(spacing: isCompactDeviceDynamic ? 20 : (isLargeScreenDynamic ? 30 : (isLandscape ? 20 : 40))) {
+                // 縦長（Portrait stack）ではヘッダとカード間を詰めつつ、上部の安全領域分だけ下げる
+                VStack(spacing: (isPortraitStack ? 16 : (isCompactDeviceDynamic ? 20 : (isLargeScreenDynamic ? 30 : (isLandscape ? 20 : 40))))) {
                     // Header - コンパクトデバイスではよりコンパクトに
                     VStack(spacing: isCompactDeviceDynamic ? 5 : (isLargeScreenDynamic ? 8 : (isLandscape ? 5 : 10))) {
                         Text("温度センサー表示")
@@ -155,7 +173,7 @@ struct HomeView: View {
                             // 最大幅制限を削除し、ウィンドウ幅に比例してカードが拡がる
                         } else {
                             // Portrait: vertical stack
-                            VStack(spacing: 14) {
+                            VStack(spacing: isPhone ? 10 : 14) {
                                 ZStack(alignment: .topTrailing) {
                                     SensorCard(
                                         title: "温度",
@@ -231,14 +249,17 @@ struct HomeView: View {
                     }
                 }
                 .padding(.horizontal, max(20, screenWidth * 0.05)) // ウィンドウ幅の5%、最低20ptの動的パディング
-                .padding(.top, isCompactDeviceDynamic ? 10 : (isLargeScreenDynamic ? 30 : (isLandscape ? 10 : 20)))
+                // 縦長表示では上部の安全領域分だけ下げる（iPhoneはDynamic Island/ノッチ、iPad/Macもステータスバー等）
+                .padding(.top, (isCompactDeviceDynamic ? 10 : (isLargeScreenDynamic ? 30 : (isLandscape ? 10 : 20))) + effectiveTopInset)
                 .padding(.vertical, isCompactDeviceDynamic ? 10 : (isLargeScreenDynamic ? 30 : (isLandscape ? 0 : 20)))
+                .offset(y: -portraitLift)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: (isLandscape || isLargeScreenDynamic || isCompactDeviceDynamic) ? .center : .top)
             )
         }
-        .navigationTitle("ホーム")
+        .navigationTitle(isIPad ? "ホーム" : "")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        .modifier(HideNavigationBarOnIPhoneModifier())
         #endif
         .onAppear {
             // デバッグ情報を表示
@@ -305,6 +326,24 @@ struct HomeView: View {
         .buttonStyle(.plain)
         .padding(10)
         .accessibilityLabel("グラフを開く")
+    }
+}
+
+private struct HideNavigationBarOnIPhoneModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        #if os(iOS)
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            if #available(iOS 16.0, *) {
+                content.toolbar(.hidden, for: .navigationBar)
+            } else {
+                content
+            }
+        } else {
+            content
+        }
+        #else
+        content
+        #endif
     }
 }
 
