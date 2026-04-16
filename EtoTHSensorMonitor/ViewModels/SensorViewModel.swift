@@ -249,6 +249,16 @@ class SensorViewModel: ObservableObject {
             }
         }
     }
+
+    /// 本日のログを表示中の場合、フォアグラウンド復帰時に再読み込みする
+    /// - Note: Graph/History が「過去ログ」で本日を表示しているケースで、ファイル追記分を反映するために使用する
+    func refreshTodayLogIfNeeded() {
+        guard !isLoadingDate, let loadedDate else { return }
+        guard Calendar.current.isDateInToday(loadedDate) else { return }
+
+        loadAvailableDates()
+        loadReadings(for: Date())
+    }
     
     func filterByDevice(_ deviceId: UInt8?) {
         selectedDeviceId = deviceId

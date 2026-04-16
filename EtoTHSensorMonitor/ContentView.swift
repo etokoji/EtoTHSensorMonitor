@@ -106,6 +106,9 @@ struct ContentView: View {
         
         // フォアグラウンド復帰処理
         sharedViewModel.dataService.handleEnterForeground()
+
+        // 過去ログで「本日」を表示中なら、追記された分を再読み込み
+        sharedViewModel.refreshTodayLogIfNeeded()
         
         // Bluetoothスキャンが停止している場合、再開してみる
         if !sharedViewModel.isScanning {
@@ -309,6 +312,30 @@ struct HistoryView: View {
             Button("キャンセル", role: .cancel) { }
         } message: {
             Text("このアプリがセンサーデータを受信するためには、Bluetoothアクセスを許可してください。\n\n設定 > アプリ > 温度センサー表示 > Bluetooth で設定できます。")
+        }
+        .onChange(of: dataSourceType) { _, newValue in
+            guard newValue == .pastLog else { return }
+            refreshTodayPastLogIfNeeded()
+        }
+    }
+
+    private func refreshTodayPastLogIfNeeded() {
+        let today = Calendar.current.startOfDay(for: Date())
+
+        // 日付一覧が古い可能性があるので先に更新
+        viewModel.loadAvailableDates()
+
+        if let date = selectedLogDate, Calendar.current.isDate(date, inSameDayAs: today) {
+            viewModel.loadReadings(for: date)
+            return
+        }
+
+        // まだ日付が未選択の場合は、利用可能な先頭日付を選ぶ（初期表示と同じ挙動）
+        if selectedLogDate == nil, let firstDate = viewModel.availableLogDates.first {
+            selectedLogDate = firstDate
+            if Calendar.current.isDate(firstDate, inSameDayAs: today) {
+                viewModel.loadReadings(for: firstDate)
+            }
         }
     }
     
