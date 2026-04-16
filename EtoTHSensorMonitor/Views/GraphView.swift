@@ -194,13 +194,17 @@ struct GraphView: View {
                             Spacer()
                             
                             if selectedMetric == .illuminance {
-                                Toggle(isOn: $illuminanceLogScaleEnabled) {
-                                    Text("対数")
+                                // Toggle 単体だと HStack 内で横方向に広がり、iOS ではラベルとスイッチが大きく離れる
+                                HStack(spacing: 8) {
+                                    Text("対数軸")
+                                        .font(.subheadline)
+                                    Toggle("", isOn: $illuminanceLogScaleEnabled)
+                                        .labelsHidden()
+                                        .toggleStyle(.switch)
                                 }
-                                .toggleStyle(.switch)
-                                .labelsHidden()
                                 .disabled(!supportsIlluminanceLogScale)
-                                .accessibilityLabel("照度の縦軸を対数にする")
+                                .accessibilityElement(children: .combine)
+                                .accessibilityLabel("照度の縦軸を対数軸にする")
                             }
                         }
                         .padding(.horizontal)
