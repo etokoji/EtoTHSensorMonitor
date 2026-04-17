@@ -76,6 +76,19 @@ struct GraphView: View {
         // 古い順にソート（グラフは左から右へ時間が進む）
         return data.sorted { $0.timestamp < $1.timestamp }
     }
+
+    private var selectedMetricYAxisDomain: ClosedRange<Double> {
+        switch selectedMetric {
+        case .pressure, .voltage:
+            let values = chartData.map { valueFor(metric: selectedMetric, item: $0) }
+            return Self.dynamicYAxisDomain(for: selectedMetric, values: values) ?? Self.yAxisDomain(for: selectedMetric)
+        case .illuminance:
+            // 対数/線形は ChartYScaleModifier 側で分岐（type: .log の都合）
+            return Self.yAxisDomain(for: selectedMetric)
+        default:
+            return Self.yAxisDomain(for: selectedMetric)
+        }
+    }
     
     // 現在のデータに含まれるユニークなデバイスID
     private var uniqueDeviceIds: [UInt8] {
@@ -245,7 +258,7 @@ struct GraphView: View {
                             }
                         }
                         // Y軸の値の範囲をメトリクスごとに調整
-                        .modifier(ChartYScaleModifier(metric: selectedMetric, illuminanceLogScaleEnabled: illuminanceLogScaleEnabled && supportsIlluminanceLogScale))
+                        .modifier(ChartYScaleModifier(metric: selectedMetric, yAxisDomain: selectedMetricYAxisDomain, illuminanceLogScaleEnabled: illuminanceLogScaleEnabled && supportsIlluminanceLogScale))
                         // Y軸の目盛を調整
                         .chartYAxis {
                             switch selectedMetric {
@@ -261,25 +274,19 @@ struct GraphView: View {
                                     }
                                 }
                             case .pressure:
-                                AxisMarks(values: Array(stride(from: 860, through: 1150, by: 20))) { value in
-                                    if let number = value.as(Int.self) {
-                                        // 100hPaごとに濃い線
-                                        let isMajor = number % 100 == 0
-                                        AxisGridLine(stroke: StrokeStyle(lineWidth: isMajor ? 1 : 0.5))
-                                            .foregroundStyle(isMajor ? Color.primary.opacity(0.3) : Color.primary.opacity(0.1))
-                                        AxisTick()
-                                        AxisValueLabel("\(number)")
+                                AxisMarks(values: .automatic(desiredCount: 6)) { value in
+                                    AxisGridLine()
+                                    AxisTick()
+                                    if let number = value.as(Double.self) {
+                                        AxisValueLabel(String(format: "%.0f", number))
                                     }
                                 }
                             case .voltage:
-                                AxisMarks(values: Array(stride(from: 1.0, through: 4.5, by: 0.2))) { value in
+                                AxisMarks(values: .automatic(desiredCount: 6)) { value in
+                                    AxisGridLine()
+                                    AxisTick()
                                     if let number = value.as(Double.self) {
-                                        // 1.0Vごとに濃い線 (浮動小数点の誤差を考慮)
-                                        let isMajor = abs(number.remainder(dividingBy: 1.0)) < 0.01
-                                        AxisGridLine(stroke: StrokeStyle(lineWidth: isMajor ? 1 : 0.5))
-                                            .foregroundStyle(isMajor ? Color.primary.opacity(0.3) : Color.primary.opacity(0.1))
-                                        AxisTick()
-                                        AxisValueLabel(String(format: "%.1f", number))
+                                        AxisValueLabel(String(format: "%.2f", number))
                                     }
                                 }
                             case .humidity:
@@ -417,6 +424,73 @@ struct GraphView: View {
         }
     }
 
+    private static func dynamicYAxisDomain(for metric: SensorMetric, values: [Double]) -> ClosedRange<Double>? {
+        let finite = values.filter { $0.isFinite }
+        guard !finite.isEmpty else { return nil }
+
+        let sorted = finite.sorted()
+        let p5 = percentile(sorted, p: 0.05)
+        let p50 = percentile(sorted, p: 0.50)
+        let p95 = percentile(sorted, p: 0.95)
+
+        let baseLow = min(p5, p95)
+        let baseHigh = max(p5, p95)
+        let span = baseHigh - baseLow
+
+        let step: Double
+        let minPad: Double
+        let minSpan: Double
+        let clampLow: Double?
+
+        switch metric {
+        case .pressure:
+            step = 0.5
+            minPad = 0.2
+            minSpan = 2.0
+            clampLow = 800.0
+        case .voltage:
+            step = 0.05
+            minPad = 0.05
+            minSpan = 0.3
+            clampLow = 0.0
+        default:
+            return nil
+        }
+
+        let pad = max(span * 0.10, minPad)
+        let finalSpan = max(span + 2 * pad, minSpan)
+
+        var low = p50 - finalSpan / 2
+        var high = p50 + finalSpan / 2
+
+        // 丸め（軸が細かく変わりすぎないように）
+        low = floor(low / step) * step
+        high = ceil(high / step) * step
+
+        if let clampLow {
+            low = max(clampLow, low)
+            if high <= low {
+                high = low + step
+            }
+        }
+
+        return low...high
+    }
+
+    private static func percentile(_ sorted: [Double], p: Double) -> Double {
+        precondition(!sorted.isEmpty)
+        if sorted.count == 1 { return sorted[0] }
+
+        let clampedP = min(max(p, 0.0), 1.0)
+        let pos = clampedP * Double(sorted.count - 1)
+        let lower = Int(floor(pos))
+        let upper = Int(ceil(pos))
+
+        if lower == upper { return sorted[lower] }
+        let weight = pos - Double(lower)
+        return sorted[lower] * (1 - weight) + sorted[upper] * weight
+    }
+
     private var supportsIlluminanceLogScale: Bool {
         if #available(iOS 17.0, macOS 14.0, *) {
             return true
@@ -426,6 +500,7 @@ struct GraphView: View {
 
     private struct ChartYScaleModifier: ViewModifier {
         let metric: SensorMetric
+        let yAxisDomain: ClosedRange<Double>
         let illuminanceLogScaleEnabled: Bool
 
         func body(content: Content) -> some View {
@@ -440,7 +515,7 @@ struct GraphView: View {
                     content.chartYScale(domain: 0...54_000)
                 }
             } else {
-                content.chartYScale(domain: GraphView.yAxisDomain(for: metric))
+                content.chartYScale(domain: yAxisDomain)
             }
         }
     }
