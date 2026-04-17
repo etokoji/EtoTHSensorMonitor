@@ -79,9 +79,12 @@ struct GraphView: View {
 
     private var selectedMetricYAxisDomain: ClosedRange<Double> {
         switch selectedMetric {
-        case .pressure, .voltage:
-            let values = chartData.map { valueFor(metric: selectedMetric, item: $0) }
-            return Self.dynamicYAxisDomain(for: selectedMetric, values: values) ?? Self.yAxisDomain(for: selectedMetric)
+        case .pressure:
+            let values = chartData.map { valueFor(metric: .pressure, item: $0) }
+            return Self.pressureAdaptiveYAxisDomain(values: values)
+        case .voltage:
+            let values = chartData.map { valueFor(metric: .voltage, item: $0) }
+            return Self.dynamicYAxisDomain(for: .voltage, values: values) ?? Self.yAxisDomain(for: .voltage)
         case .illuminance:
             // 対数/線形は ChartYScaleModifier 側で分岐（type: .log の都合）
             return Self.yAxisDomain(for: selectedMetric)
@@ -443,11 +446,6 @@ struct GraphView: View {
         let clampLow: Double?
 
         switch metric {
-        case .pressure:
-            step = 0.5
-            minPad = 0.2
-            minSpan = 2.0
-            clampLow = 800.0
         case .voltage:
             step = 0.05
             minPad = 0.05
@@ -472,6 +470,87 @@ struct GraphView: View {
             if high <= low {
                 high = low + step
             }
+        }
+
+        return low...high
+    }
+
+    private static func pressureAdaptiveYAxisDomain(values: [Double]) -> ClosedRange<Double> {
+        // 通常は固定レンジ（見やすさ優先）
+        let fixedLow = 960.0
+        let fixedHigh = 1050.0
+        let fixed = fixedLow...fixedHigh
+
+        let finite = values.filter { $0.isFinite }
+        guard !finite.isEmpty else { return fixed }
+
+        // 直近が連続して固定範囲外なら、そのときだけ動的に調整する
+        // - たまの外れ値では軸を動かさない
+        let consecutiveThreshold = 3
+        var lowStreak = 0
+        var highStreak = 0
+        for v in finite.reversed() {
+            if v < fixedLow {
+                lowStreak += 1
+                break
+            }
+            if v > fixedHigh {
+                highStreak += 1
+                break
+            }
+            // 直近が範囲内になった時点で連続は途切れる
+            break
+        }
+
+        // 直近1点だけでは「連続」を判断できないので、末尾から同方向に続く分だけ数える
+        if let last = finite.last {
+            if last < fixedLow {
+                lowStreak = 0
+                for v in finite.reversed() {
+                    if v < fixedLow { lowStreak += 1 } else { break }
+                }
+            } else if last > fixedHigh {
+                highStreak = 0
+                for v in finite.reversed() {
+                    if v > fixedHigh { highStreak += 1 } else { break }
+                }
+            } else {
+                return fixed
+            }
+        }
+
+        guard max(lowStreak, highStreak) >= consecutiveThreshold else {
+            return fixed
+        }
+
+        // 動的化する場合も「通常域の見やすさ」を優先して分位ベースでレンジを作る
+        // ただし丸めは気圧向けに 0.5hPa 刻み
+        let sorted = finite.sorted()
+        let p5 = percentile(sorted, p: 0.05)
+        let p50 = percentile(sorted, p: 0.50)
+        let p95 = percentile(sorted, p: 0.95)
+
+        let baseLow = min(p5, p95)
+        let baseHigh = max(p5, p95)
+        let span = baseHigh - baseLow
+
+        let step = 0.5
+        let minPad = 0.2
+        let minSpan = 10.0
+        let clampLow = 800.0
+
+        let pad = max(span * 0.10, minPad)
+        let finalSpan = max(span + 2 * pad, minSpan)
+
+        var low = p50 - finalSpan / 2
+        var high = p50 + finalSpan / 2
+
+        low = floor(low / step) * step
+        high = ceil(high / step) * step
+
+        low = max(clampLow, low)
+        if high <= low {
+            high = low + step
         }
 
         return low...high
