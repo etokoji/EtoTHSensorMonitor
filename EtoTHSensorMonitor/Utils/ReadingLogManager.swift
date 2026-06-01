@@ -116,6 +116,10 @@ class ReadingLogManager {
     }
 
     private func cleanupOldFiles() {
+        #if os(macOS)
+        // macOS ではストレージ容量に余裕があるためログを削除しない
+        return
+        #else
         guard let files = try? fileManager.contentsOfDirectory(at: logsDirectory, includingPropertiesForKeys: nil) else {
             return
         }
@@ -128,6 +132,7 @@ class ReadingLogManager {
                 print("📝 Old log deleted: \(file.lastPathComponent)")
             }
         }
+        #endif
     }
 
     private func logFileURL(for date: Date) -> URL {
