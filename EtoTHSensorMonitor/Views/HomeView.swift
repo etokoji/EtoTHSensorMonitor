@@ -3,6 +3,7 @@ import SwiftUI
 struct HomeView: View {
     @ObservedObject var viewModel: SensorViewModel
     @State private var isLandscape = false
+    @State private var showingAppInfo = false
     
     private var isIPad: Bool {
         #if canImport(UIKit)
@@ -256,6 +257,27 @@ struct HomeView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: (isLandscape || isLargeScreenDynamic || isCompactDeviceDynamic) ? .center : .top)
             )
         }
+        // 情報ボタン（画面右上に常時表示）
+        .overlay(alignment: .topTrailing) {
+            Button {
+                showingAppInfo = true
+            } label: {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .padding(8)
+                    .background(.thinMaterial)
+                    .clipShape(Circle())
+                    .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 1)
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 8)
+            .padding(.trailing, 12)
+            .accessibilityLabel("アプリ情報")
+        }
+        .sheet(isPresented: $showingAppInfo) {
+            AppInfoView()
+        }
         .navigationTitle(isIPad ? "ホーム" : "")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -327,6 +349,76 @@ struct HomeView: View {
         .padding(10)
         .accessibilityLabel("グラフを開く")
     }
+}
+
+// アプリのバージョン情報などを表示するビュー
+struct AppInfoView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    // Info.plistからバージョン情報を取得
+    private var appVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "不明"
+    }
+
+    private var buildNumber: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "不明"
+    }
+
+    private var appName: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+            ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
+            ?? "EtoTHSensorMonitor"
+    }
+
+    var body: some View {
+        VStack(spacing: 20) {
+            // アプリアイコン風の表示
+            Image(systemName: "thermometer.sun")
+                .font(.system(size: 50))
+                .foregroundColor(.blue)
+                .frame(width: 90, height: 90)
+                .background(Color.blue.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .padding(.top, 30)
+
+            VStack(spacing: 8) {
+                Text(appName)
+                    .font(.title2)
+                    .fontWeight(.bold)
+
+                Text("バージョン \(appVersion) (\(buildNumber))")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+
+            Divider()
+                .padding(.horizontal, 40)
+
+            VStack(spacing: 6) {
+                Text("ESP32温湿度センサーのデータを")
+                Text("Bluetooth経由で受信・表示するアプリ")
+            }
+            .font(.footnote)
+            .foregroundColor(.secondary)
+            .multilineTextAlignment(.center)
+
+            Spacer()
+
+            Button("閉じる") {
+                dismiss()
+            }
+            .keyboardShortcut(.cancelAction)
+            .padding(.bottom, 20)
+        }
+        .frame(minWidth: 300, minHeight: 340)
+        #if os(macOS)
+        .frame(width: 340, height: 380)
+        #endif
+    }
+}
+
+#Preview("App Info") {
+    AppInfoView()
 }
 
 private struct HideNavigationBarOnIPhoneModifier: ViewModifier {
